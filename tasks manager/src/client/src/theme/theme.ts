@@ -3,20 +3,8 @@ import { cssVariables, palettes, tokens } from './tokens'
 
 const c = tokens.color
 
-/**
- * Platform font first (apple-design, section 15): SF on Apple devices, which already ships optical sizing and tracking
- * tables. Inter is the fallback so Windows and Android match the approved mockups instead of falling to Arial.
- */
-export const fontStack = [
-  '-apple-system',
-  'BlinkMacSystemFont',
-  '"SF Pro Text"',
-  '"SF Pro Display"',
-  '"Inter Variable"',
-  '"Segoe UI"',
-  'system-ui',
-  'sans-serif',
-].join(',')
+/** Inter for text, Heebo behind it so Hebrew renders in a matching face. Numbers use `tokens.font.mono`. */
+export const fontStack = ['"Inter Variable"', 'Inter', '"Heebo Variable"', 'Heebo', '"Segoe UI"', 'system-ui', 'sans-serif'].join(',')
 
 /**
  * One theme per appearance. MUI needs real colour values for its palette (it derives hover and contrast colours from
@@ -28,11 +16,11 @@ function makeTheme(mode: 'light' | 'dark') {
   return createTheme({
   palette: {
     mode,
-    primary: { main: p.primary, dark: p.primaryHover, light: p.primarySoft, contrastText: mode === 'dark' ? '#0E1016' : '#FFFFFF' },
+    primary: { main: p.primary, dark: p.primaryHover, light: p.primarySoft, contrastText: mode === 'dark' ? '#000000' : '#FFFFFF' },
     secondary: { main: p.ink },
     error: { main: p.danger, light: p.dangerSoft },
-    warning: { main: p.warnText, light: p.warnBg },
-    success: { main: p.tealText, light: p.tealBg },
+    warning: { main: p.stQa, light: p.neutralBg },
+    success: { main: p.stDone, light: p.neutralBg },
     background: { default: p.canvas, paper: p.surface },
     text: { primary: p.text, secondary: p.muted },
     divider: p.border,
@@ -41,9 +29,9 @@ function makeTheme(mode: 'light' | 'dark') {
   // Sizes in rem so the layout scales with the user's text-size setting (section 15).
   typography: {
     fontFamily: fontStack,
-    fontSize: 14,
+    fontSize: 13,
     // Tracking is size-specific: tighter as text grows, near zero for body, slightly open for small text.
-    h1: { fontSize: '1.625rem', fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.022em' },
+    h1: { fontSize: '1.3125rem', fontWeight: 500, lineHeight: 1.2, letterSpacing: '-0.01em' },
     h2: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.3, letterSpacing: '-0.011em' },
     h3: { fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.35, letterSpacing: '-0.006em' },
     subtitle1: { fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4, letterSpacing: '-0.006em' },
@@ -59,7 +47,9 @@ function makeTheme(mode: 'light' | 'dark') {
       styleOverrides: {
         // The colour variables for each appearance; the attribute on <html> picks which set is live.
         ':root': cssVariables('light'),
-        'html[data-appearance="dark"]': { ...cssVariables('dark'), colorScheme: 'dark' },
+        'html[data-theme="dark"]': { ...cssVariables('dark'), colorScheme: 'dark' },
+        // Every control gets the same visible 2px focus ring.
+        ':focus-visible': { outline: `2px solid ${c.focus}`, outlineOffset: 2 },
         body: { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', textRendering: 'optimizeLegibility' },
         // Reduced motion does not mean no feedback: state still changes, it just stops travelling (section 14).
         '@media (prefers-reduced-motion: reduce)': {
@@ -77,22 +67,22 @@ function makeTheme(mode: 'light' | 'dark') {
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          minHeight: 44,
+          minHeight: 36,
           borderRadius: tokens.radius.control,
-          paddingInline: 16,
+          paddingInline: 14,
           // Feedback on press, instantly (section 1): scale on :active, no waiting for the click to finish.
           transition: 'transform 100ms ease-out, background-color 120ms ease-out, border-color 120ms ease-out, box-shadow 120ms ease-out',
           '&:active:not(.Mui-disabled)': { transform: 'scale(0.97)' },
         },
-        sizeSmall: { minHeight: 36, paddingInline: 12 },
+        sizeSmall: { minHeight: 30, paddingInline: 10 },
         outlined: {
           color: c.text,
-          backgroundColor: c.surface,
+          backgroundColor: 'transparent',
           borderColor: c.borderStrong,
-          '&:hover': { backgroundColor: c.canvas, borderColor: c.borderStrong },
+          '&:hover': { backgroundColor: c.wash, borderColor: c.borderHover },
         },
-        contained: { '&:hover': { backgroundColor: c.primaryHover } },
-        text: { color: c.primaryHover },
+        contained: { backgroundColor: c.btn, color: c.btnText, '&:hover': { backgroundColor: c.btn, opacity: 0.88 }, '&.Mui-disabled': { backgroundColor: c.track, color: c.faint } },
+        text: { color: c.primary },
       },
     },
     MuiIconButton: {
@@ -115,7 +105,7 @@ function makeTheme(mode: 'light' | 'dark') {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          minHeight: 44,
+          minHeight: 36,
           borderRadius: tokens.radius.control,
           backgroundColor: c.surface,
           '& .MuiOutlinedInput-notchedOutline': { borderColor: c.borderStrong },
@@ -139,7 +129,8 @@ function makeTheme(mode: 'light' | 'dark') {
         root: { '& .MuiBackdrop-root': { backgroundColor: 'rgba(0, 0, 0, 0.45)' } },
         paper: {
           borderRadius: tokens.radius.sheet,
-          boxShadow: '0 24px 64px rgba(16, 24, 40, 0.18), 0 2px 8px rgba(16, 24, 40, 0.08)',
+          border: `1px solid ${c.borderStrong}`,
+          boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35)',
           backgroundImage: 'none',
         },
       },
@@ -149,18 +140,16 @@ function makeTheme(mode: 'light' | 'dark') {
         paper: {
           borderRadius: tokens.radius.card,
           border: `1px solid ${c.border}`,
-          backgroundColor: 'color-mix(in srgb, var(--sm-surface) 82%, transparent)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          boxShadow: '0 12px 32px rgba(16, 24, 40, 0.14)',
-          '@media (prefers-reduced-transparency: reduce)': { backgroundColor: c.surface, backdropFilter: 'none' },
+          backgroundColor: c.surface,
+          backgroundImage: 'none',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
         },
       },
     },
-    MuiMenuItem: { styleOverrides: { root: { minHeight: 44, borderRadius: 8, marginInline: 6 } } },
+    MuiMenuItem: { styleOverrides: { root: { minHeight: 34, borderRadius: tokens.radius.control, marginInline: 4, fontSize: '0.8125rem' } } },
     MuiAlert: { styleOverrides: { root: { borderRadius: tokens.radius.task, alignItems: 'center' } } },
-    MuiTooltip: { styleOverrides: { tooltip: { fontSize: '0.75rem', borderRadius: 8, backgroundColor: c.ink, color: c.onInk } } },
-    MuiTab: { styleOverrides: { root: { minHeight: 44, textTransform: 'none', fontWeight: 600 } } },
+    MuiTooltip: { styleOverrides: { tooltip: { fontSize: '0.75rem', borderRadius: tokens.radius.control, backgroundColor: c.ink, color: c.onInk } } },
+    MuiTab: { styleOverrides: { root: { minHeight: 40, textTransform: 'none', fontWeight: 600 } } },
   },
   })
 }

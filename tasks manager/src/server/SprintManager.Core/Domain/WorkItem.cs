@@ -13,6 +13,33 @@ public enum WorkItemStatus
     Done,
 }
 
+/// <summary>What kind of work a task is. A task without a type (older data) is shown as untyped.</summary>
+public enum TaskType
+{
+    /// <summary>Groups multiple related features and stories.</summary>
+    Epic,
+    /// <summary>UI/UX design and prototyping.</summary>
+    DesignTask,
+    /// <summary>Write or update technical documentation.</summary>
+    Documentation,
+    /// <summary>Test functionality and find issues.</summary>
+    TestingQa,
+    /// <summary>Improve speed and resource usage.</summary>
+    Performance,
+    /// <summary>Fix vulnerabilities or improve security.</summary>
+    Security,
+    /// <summary>CI/CD, deployment, servers, Docker.</summary>
+    Infrastructure,
+    /// <summary>Move data, databases, or frameworks.</summary>
+    Migration,
+    /// <summary>Improve usability for people with disabilities.</summary>
+    Accessibility,
+    /// <summary>Connect external APIs or services.</summary>
+    Integration,
+    /// <summary>Fix something that broke after a previous change.</summary>
+    Regression,
+}
+
 /// <summary>
 /// The algorithmic view of a task: only the fields the planning algorithms need.
 /// Persistence concerns (description, comments, timestamps) live outside Core.

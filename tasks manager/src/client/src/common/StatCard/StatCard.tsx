@@ -19,10 +19,10 @@ export function StatCard({ label, value, hint, tone = 'default' }: StatCardProps
       <Typography
         component="div"
         sx={{
-          fontSize: '1.75rem',
-          fontWeight: 700,
-          lineHeight: 1.1,
-          letterSpacing: '-0.02em',
+          fontFamily: tokens.font.mono,
+          fontSize: '1.875rem',
+          fontWeight: 400,
+          lineHeight: 1.15,
           color: tone === 'warn' ? tokens.color.warnText : 'text.primary',
         }}
       >

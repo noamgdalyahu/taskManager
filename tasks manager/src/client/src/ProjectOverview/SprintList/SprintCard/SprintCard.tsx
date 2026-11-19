@@ -28,7 +28,7 @@ export function SprintCard({ sprint, projectId }: { sprint: SprintDto; projectId
             {formatDay(sprint.startDate)} to {formatDay(sprint.endDate)}
           </Typography>
         </Box>
-        <Chip size="small" label={sprint.status} sx={{ bgcolor: tone[sprint.status].bg, color: tone[sprint.status].fg }} />
+        <Chip size="small" label={sprint.status === 'Closed' ? 'Completed' : sprint.status} sx={{ bgcolor: tone[sprint.status].bg, color: tone[sprint.status].fg }} />
       </Box>
       <Typography variant="body2" color="text.secondary">
         {sprint.taskCount} {sprint.taskCount === 1 ? 'task' : 'tasks'}, {formatHours(sprint.totalEstimateHours)} planned of {formatHours(sprint.teamCapacityHours)} capacity

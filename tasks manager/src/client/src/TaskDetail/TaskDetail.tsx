@@ -1,12 +1,16 @@
 import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded'
+import EditOutlined from '@mui/icons-material/EditOutlined'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useProject } from '@/api/projects'
 import { useSprints } from '@/api/sprints'
 import { useProjectTasks, useTaskDetail } from '@/api/tasks'
 import { useAuth } from '@/auth/useAuth'
+import { EditTaskDialog } from '@/common/EditTaskDialog/EditTaskDialog'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
+import { HairlineButton } from '@/common/HairlineButton/HairlineButton'
 import { PageHeader } from '@/common/PageHeader/PageHeader'
 import { PageLoading } from '@/common/PageLoading/PageLoading'
 import { StatusChip } from '@/common/StatusChip/StatusChip'
@@ -26,6 +30,7 @@ export function TaskDetail() {
   const sprints = useSprints(projectId)
   const tasks = useProjectTasks(projectId)
   const { members, byId } = useMemberDirectory(projectId)
+  const [editing, setEditing] = useState(false)
 
   if (detail.isLoading) return <PageLoading />
   if (detail.error) return <ErrorState error={detail.error} onRetry={() => detail.refetch()} />
@@ -34,7 +39,7 @@ export function TaskDetail() {
   const { task, comments, history, timeLogs, loggedHours } = detail.data
   const sprint = sprints.data?.find((candidate) => candidate.id === task.sprintId)
   // Back goes to where the task lives: its sprint's board, or the backlog.
-  const backTo = sprint ? `/p/${projectId}/board/${sprint.id}` : isManager ? `/p/${projectId}` : '/me/tasks'
+  const backTo = sprint ? `/p/${projectId}/board/${sprint.id}` : isManager ? `/p/${projectId}/work-items` : '/me/tasks'
   const allTasks = new Map((tasks.data ?? []).map((candidate) => [candidate.id, candidate]))
 
   return (
@@ -48,7 +53,16 @@ export function TaskDetail() {
         }
         title={task.title}
         subtitle={<StatusChip status={task.status} />}
+        actions={
+          isManager ? (
+            <HairlineButton onClick={() => setEditing(true)}>
+              <EditOutlined aria-hidden />
+              Edit
+            </HairlineButton>
+          ) : undefined
+        }
       />
+      {editing && <EditTaskDialog task={task} sprints={sprints.data ?? []} members={members} onClose={() => setEditing(false)} />}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box sx={{ flex: '999 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Surface>

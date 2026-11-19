@@ -2,29 +2,24 @@ import Box from '@mui/material/Box'
 import type { DashboardDto, SprintDto, TaskDto } from '@/api/types'
 import { StatCard } from '@/common/StatCard/StatCard'
 import { formatDay, formatHours } from '@/lib/format'
-import { daysBetween } from '@/lib/sprintDays'
 
 interface KpiRowProps {
   dashboard: DashboardDto
   sprint: SprintDto
-  /** Tasks waiting in the QA column. */
-  inQa: TaskDto[]
+  /** Every task of the sprint. */
+  tasks: TaskDto[]
 }
 
-/** The four numbers a manager reads first. The forecast turns orange when it lands after the sprint ends. */
-export function KpiRow({ dashboard, sprint, inQa }: KpiRowProps) {
-  const forecast = dashboard.forecastFinishDate
-  const lateBy = forecast ? daysBetween(sprint.endDate, forecast) : 0
-
-  let forecastHint = 'Not enough data to forecast yet'
-  if (forecast) forecastHint = lateBy > 0 ? `${lateBy} ${lateBy === 1 ? 'day' : 'days'} after sprint end` : 'on or before sprint end'
-
+/** The four numbers a manager reads first: tasks, hours left, hours done, days left. */
+export function KpiRow({ dashboard, sprint, tasks }: KpiRowProps) {
+  const done = tasks.filter((task) => task.status === 'Done').length
+  const remaining = Math.max(0, dashboard.totalHours - dashboard.completedHours)
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-      <StatCard label="Progress" value={`${Math.round(dashboard.progressPercent)}%`} hint={`${formatHours(dashboard.completedHours)} of ${formatHours(dashboard.totalHours)} done`} />
+      <StatCard label="Tasks" value={String(tasks.length)} hint={`${done} done`} />
+      <StatCard label="Remaining hours" value={String(Math.round(remaining * 10) / 10)} hint={`of ${formatHours(dashboard.totalHours)} planned`} tone={!dashboard.isOnTrack && remaining > 0 ? 'warn' : 'default'} />
+      <StatCard label="Completed hours" value={String(Math.round(dashboard.completedHours * 10) / 10)} hint={`${Math.round(dashboard.progressPercent)}% of the sprint`} />
       <StatCard label="Days left" value={String(dashboard.daysLeft)} hint={`sprint ends ${formatDay(sprint.endDate)}`} />
-      <StatCard label="Forecast finish" value={forecast ? formatDay(forecast) : '—'} hint={forecastHint} tone={forecast && !dashboard.isOnTrack ? 'warn' : 'default'} />
-      <StatCard label="In QA" value={String(inQa.length)} hint={inQa[0]?.title ?? 'Nothing is waiting for QA'} />
     </Box>
   )
 }

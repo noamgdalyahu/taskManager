@@ -13,7 +13,8 @@ public sealed record CreateTaskRequest(
     DateOnly? Deadline,
     IReadOnlyList<string>? RequiredSkills,
     IReadOnlyList<Guid>? DependsOn,
-    Guid? SprintId);
+    Guid? SprintId,
+    TaskType? Type = null);
 
 /// <summary>Manager edit of a task (all fields replaceable).</summary>
 public sealed record UpdateTaskRequest(
@@ -24,7 +25,8 @@ public sealed record UpdateTaskRequest(
     IReadOnlyList<string>? RequiredSkills,
     IReadOnlyList<Guid>? DependsOn,
     Guid? SprintId,
-    Guid? AssigneeId);
+    Guid? AssigneeId,
+    TaskType? Type = null);
 
 /// <summary>Status change (member or manager).</summary>
 public sealed record ChangeStatusRequest([Required] WorkItemStatus Status);
@@ -36,7 +38,8 @@ public sealed record AssignRequest(Guid? AssigneeId);
 public sealed record TaskDto(
     Guid Id, Guid ProjectId, Guid? SprintId, string Title, string Description, double EstimateHours, DateOnly? Deadline,
     WorkItemStatus Status, Guid? AssigneeId, IReadOnlyList<string> RequiredSkills, IReadOnlyList<Guid> DependsOn,
-    IReadOnlyList<Guid> WaitingFor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? CompletedAt);
+    IReadOnlyList<Guid> WaitingFor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? CompletedAt,
+    TaskType? Type);
 
 /// <summary>Task detail page.</summary>
 public sealed record TaskDetailDto(TaskDto Task, IReadOnlyList<CommentDto> Comments, IReadOnlyList<HistoryDto> History, IReadOnlyList<TimeLogDto> TimeLogs, double LoggedHours);

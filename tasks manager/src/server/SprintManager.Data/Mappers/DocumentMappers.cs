@@ -100,7 +100,8 @@ public static class DocumentMappers
         d.DependsOn.Select(id => new TaskId(id)).ToList(),
         new DateTimeOffset(DateTime.SpecifyKind(d.CreatedAt, DateTimeKind.Utc)),
         new DateTimeOffset(DateTime.SpecifyKind(d.UpdatedAt, DateTimeKind.Utc)),
-        d.CompletedAt is { } c ? new DateTimeOffset(DateTime.SpecifyKind(c, DateTimeKind.Utc)) : null);
+        d.CompletedAt is { } c ? new DateTimeOffset(DateTime.SpecifyKind(c, DateTimeKind.Utc)) : null,
+        d.Type is { } type ? Enum.Parse<TaskType>(type) : null);
 
     /// <summary>Domain to document.</summary>
     public static TaskDocument ToDocument(this TaskItem t) => new()
@@ -119,6 +120,7 @@ public static class DocumentMappers
         CreatedAt = t.CreatedAt.UtcDateTime,
         UpdatedAt = t.UpdatedAt.UtcDateTime,
         CompletedAt = t.CompletedAt?.UtcDateTime,
+        Type = t.Type?.ToString(),
     };
 
     // ---- PlanJob --------------------------------------------------------------

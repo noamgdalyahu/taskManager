@@ -69,7 +69,7 @@ public sealed class TaskService(
 
         var now = clock.UtcNow;
         var task = new TaskItem(id, projectId, request.SprintId is { } s ? new SprintId(s) : null, request.Title.Trim(), request.Description?.Trim() ?? "",
-            new Hours(request.EstimateHours), request.Deadline, WorkItemStatus.ToDo, null, Normalise(request.RequiredSkills), deps, now, now, null);
+            new Hours(request.EstimateHours), request.Deadline, WorkItemStatus.ToDo, null, Normalise(request.RequiredSkills), deps, now, now, null, request.Type);
 
         await tasks.AddAsync(task, ct);
         await publisher.PublishAsync(new TaskChanged(null, task, caller.Id, now), ct);
@@ -100,6 +100,7 @@ public sealed class TaskService(
             DependsOn = deps,
             SprintId = request.SprintId is { } s ? new SprintId(s) : null,
             AssigneeId = request.AssigneeId is { } a ? new MemberId(a) : null,
+            Type = request.Type,
             UpdatedAt = clock.UtcNow,
         };
         return await SaveAsync(before, after, caller, projectTasks, ct);

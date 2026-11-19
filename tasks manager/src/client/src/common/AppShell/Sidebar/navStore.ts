@@ -46,6 +46,10 @@ export function useNavState() {
   return {
     collapsed: current.collapsed,
     isGroupOpen: (id: string) => !current.closedGroups.includes(id),
+    /** Opens a group and leaves it open if it already is, so running it twice (React StrictMode does) changes nothing. */
+    openGroup: (id: string) => {
+      if (state.closedGroups.includes(id)) update({ ...state, closedGroups: state.closedGroups.filter((group) => group !== id) })
+    },
     toggleCollapsed: () => update({ ...state, collapsed: !state.collapsed }),
     toggleGroup: (id: string) =>
       update({ ...state, closedGroups: state.closedGroups.includes(id) ? state.closedGroups.filter((group) => group !== id) : [...state.closedGroups, id] }),

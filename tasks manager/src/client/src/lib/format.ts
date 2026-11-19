@@ -25,3 +25,13 @@ export function initials(name: string): string {
   const parts = name.trim().split(/\s+/)
   return (parts[0]?.[0] ?? '?').toUpperCase() + (parts.length > 1 ? (parts[parts.length - 1][0] ?? '').toUpperCase() : '')
 }
+
+/** The short work item number shown as "#1A2B": task ids are GUIDs, so their first four characters stand in. */
+export function shortId(id: string): string {
+  return id.slice(0, 4).toUpperCase()
+}
+
+/** Hours still to do on a task: its estimate until it is Done, then nothing. */
+export function remainingHours(task: { status: string; estimateHours: number }): number {
+  return task.status === 'Done' ? 0 : task.estimateHours
+}

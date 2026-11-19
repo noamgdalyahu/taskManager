@@ -9,7 +9,7 @@ public static class TaskMapping
     public static TaskDto ToDto(this TaskItem t, IReadOnlyDictionary<TaskId, TaskItem> byId) => new(
         t.Id.Value, t.ProjectId.Value, t.SprintId?.Value, t.Title, t.Description, t.Estimate.Value, t.Deadline,
         t.Status, t.AssigneeId?.Value, t.RequiredSkills, t.DependsOn.Select(d => d.Value).ToList(),
-        TaskRules.OpenPrerequisites(t, byId).Select(d => d.Value).ToList(), t.CreatedAt, t.UpdatedAt, t.CompletedAt);
+        TaskRules.OpenPrerequisites(t, byId).Select(d => d.Value).ToList(), t.CreatedAt, t.UpdatedAt, t.CompletedAt, t.Type);
 
     /// <summary>History to DTO.</summary>
     public static HistoryDto ToDto(this HistoryEntry h) => new(h.Id, h.ChangedBy.Value, h.Field, h.OldValue, h.NewValue, h.At);

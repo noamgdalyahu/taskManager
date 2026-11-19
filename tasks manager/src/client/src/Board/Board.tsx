@@ -3,39 +3,39 @@ import SettingsOutlined from '@mui/icons-material/SettingsOutlined'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
 import Snackbar from '@mui/material/Snackbar'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useBoard, useDashboard } from '@/api/insight'
 import { useProject } from '@/api/projects'
-import { useAssignTask, useChangeStatus, useCreateTask } from '@/api/tasks'
-import { TASK_STATUSES, type TaskDto, type TaskStatus } from '@/api/types'
-import { useAuth, useCurrentUser } from '@/auth/useAuth'
-import { BoardColumn } from '@/Board/BoardColumn/BoardColumn'
-import { TaskCardView } from '@/Board/BoardColumn/TaskCard/TaskCardView/TaskCardView'
-import { BoardFilter } from '@/Board/BoardFilter/BoardFilter'
+import { useAssignTask, useChangeStatus, useProjectTasks } from '@/api/tasks'
+import { TASK_STATUSES, type TaskDto, type TaskStatus, type TaskType } from '@/api/types'
+import { useAuth } from '@/auth/useAuth'
+import { BoardGrid } from '@/Board/BoardGrid/BoardGrid'
+import { TaskCardView } from '@/Board/BoardGrid/StoryLane/LaneCell/TaskCard/TaskCardView/TaskCardView'
+import { BoardHeader } from '@/Board/BoardHeader/BoardHeader'
 import { BoardSettingsDialog } from '@/Board/BoardSettingsDialog/BoardSettingsDialog'
-import { MemberProgressStrip } from '@/Board/MemberProgressStrip/MemberProgressStrip'
+import { BoardTabs } from '@/Board/BoardTabs/BoardTabs'
+import { buildLanes, sumHours } from '@/Board/boardLanes'
+import { SidePanel } from '@/Board/SidePanel/SidePanel'
+import { StatStrip } from '@/Board/StatStrip/StatStrip'
 import { matchesFilter, useBoardFilter } from '@/Board/useBoardFilter'
 import { EmptyState } from '@/common/EmptyState/EmptyState'
 import { ErrorState, messageOf } from '@/common/ErrorState/ErrorState'
-import { PageHeader } from '@/common/PageHeader/PageHeader'
+import { HairlineButton } from '@/common/HairlineButton/HairlineButton'
+import { NewTaskDialog } from '@/common/NewTaskDialog/NewTaskDialog'
 import { PageLoading } from '@/common/PageLoading/PageLoading'
-import { SprintSwitcher } from '@/common/SprintSwitcher/SprintSwitcher'
 import { useMemberDirectory } from '@/hooks/useMemberDirectory'
 import { useProjectParams } from '@/hooks/useProjectParams'
 import { useSprintSelection } from '@/hooks/useSprintSelection'
-import { formatDay } from '@/lib/format'
-import { sprintProgressLabel } from '@/lib/sprintDays'
+import { daysBetween, todayIso } from '@/lib/sprintDays'
 
-// The floating card settles into place with an ease-out that approximates a critically damped spring (apple-design, section 4).
+// The floating card settles into place with an ease-out that approximates a critically damped spring.
 const DROP_ANIMATION = { duration: 260, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1)' }
 
 export function Board() {
   const { projectId, sprintId } = useProjectParams()
   const { isManager } = useAuth()
-  const me = useCurrentUser()
   const navigate = useNavigate()
 
   const project = useProject(projectId)
@@ -46,12 +46,28 @@ export function Board() {
   const dashboard = useDashboard(sprint?.id)
   const changeStatus = useChangeStatus(sprint?.id)
   const assign = useAssignTask()
-  const createTask = useCreateTask(projectId)
-  const { filter, setFilter, activeCount } = useBoardFilter()
+  const projectTasks = useProjectTasks(projectId)
+  const { filter, setFilter } = useBoardFilter()
 
   const [dragging, setDragging] = useState<TaskDto | null>(null)
   const [problem, setProblem] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  const [fullscreen, setFullscreen] = useState(false)
+
+  // Esc leaves full screen; Ctrl+N starts a new task (where the browser lets a page have the shortcut).
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFullscreen(false)
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') {
+        event.preventDefault()
+        setCreating(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // Hysteresis before a drag begins (so a click still opens the task), and a press-and-hold on touch (so scrolling still scrolls).
   const sensors = useSensors(
@@ -62,7 +78,10 @@ export function Board() {
 
   const allTasks = useMemo(() => board.data?.columns.flatMap((column) => column.tasks) ?? [], [board.data])
   const criticalIds = useMemo(() => new Set(dashboard.data?.criticalPath ?? []), [dashboard.data])
-  const allTags = useMemo(() => [...new Set(allTasks.flatMap((task) => task.requiredSkills))].sort(), [allTasks])
+
+  const visible = useMemo(() => allTasks.filter((task) => matchesFilter(task, filter)), [allTasks, filter])
+  const lanes = useMemo(() => buildLanes(visible), [visible])
+  const totals = useMemo(() => Object.fromEntries(TASK_STATUSES.map((status) => [status, allTasks.filter((task) => task.status === status).length])) as Record<TaskStatus, number>, [allTasks])
 
   if (sprintsLoading || project.isLoading) return <PageLoading />
   if (!sprint) {
@@ -81,8 +100,6 @@ export function Board() {
     )
   }
 
-  // Every member of the project works the board: moving cards and changing assignees is not a manager-only job.
-  const canMove = () => true
   const limits = project.data?.wipLimits ?? {}
 
   function move(taskId: string, status: TaskStatus) {
@@ -93,11 +110,6 @@ export function Board() {
     assign.mutate({ taskId, assigneeId: memberId }, { onError: (error) => setProblem(messageOf(error)) })
   }
 
-  // Azure's "New item" asks only for a title. The estimate starts at one hour and is edited on the card's page.
-  async function quickAdd(title: string) {
-    await createTask.mutateAsync({ title, description: '', estimateHours: 1, deadline: null, requiredSkills: [], dependsOn: [], sprintId: sprint!.id })
-  }
-
   function onDragStart(event: DragStartEvent) {
     setDragging(allTasks.find((task) => task.id === event.active.id) ?? null)
   }
@@ -105,75 +117,112 @@ export function Board() {
   function onDragEnd(event: DragEndEvent) {
     const task = dragging
     setDragging(null)
-    const target = event.over?.id as TaskStatus | undefined
+    const target = event.over?.data.current?.status as TaskStatus | undefined
     if (task && target && target !== task.status) move(task.id, target)
   }
 
   const goTo = (id: string) => navigate(`/p/${projectId}/board/${id}`)
 
+  const toggleLane = (key: string) =>
+    setCollapsed((current) => {
+      const next = new Set(current)
+      if (!next.delete(key)) next.add(key)
+      return next
+    })
+  const toggleAll = () => setCollapsed(lanes.length > 0 && lanes.every((lane) => collapsed.has(lane.key)) ? new Set() : new Set(lanes.map((lane) => lane.key)))
+  const togglePerson = (memberId: string) =>
+    setFilter({ ...filter, assignees: filter.assignees.includes(memberId) ? filter.assignees.filter((id) => id !== memberId) : [...filter.assignees, memberId] })
+  const toggleType = (type: TaskType) => setFilter({ ...filter, types: filter.types.includes(type) ? filter.types.filter((other) => other !== type) : [...filter.types, type] })
+
+  // The numbers follow the filters; the sprint day is the sprint's own.
+  const doneHours = sumHours(visible.filter((task) => task.status === 'Done'))
+  const days = daysBetween(sprint.startDate, sprint.endDate) + 1
+  const day = Math.min(days, Math.max(0, daysBetween(sprint.startDate, todayIso()) + 1))
+
   return (
     <>
-      <PageHeader
-        eyebrow={`${project.data?.name ?? ''} / Boards`}
-        title={`${sprint.name} board`}
-        subtitle={`${sprintProgressLabel(sprint.startDate, sprint.endDate)}, ends ${formatDay(sprint.endDate)}`}
-        actions={
-          <>
-            <SprintSwitcher sprints={sprints} currentId={sprint.id} onSelect={goTo} />
-            {isManager && (
-              <IconButton aria-label="Board settings" onClick={() => setSettingsOpen(true)} sx={{ color: 'text.secondary' }}>
-                <SettingsOutlined />
-              </IconButton>
-            )}
-            <BoardFilter filter={filter} onChange={setFilter} activeCount={activeCount} members={members} tags={allTags} meId={me.id} />
-          </>
-        }
+      <BoardHeader
+        sprint={sprint}
+        sprints={sprints}
+        onSelectSprint={goTo}
+        members={members}
+        selectedPeople={filter.assignees}
+        onTogglePerson={togglePerson}
+        onClearPeople={() => setFilter({ ...filter, assignees: [] })}
+        onNewItem={() => setCreating(true)}
       />
+      <BoardTabs />
 
       {board.error && <ErrorState error={board.error} onRetry={() => board.refetch()} />}
       {board.isLoading && <PageLoading />}
 
       {board.data && (
         <>
-          <MemberProgressStrip tasks={allTasks} members={members} />
-          <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragging(null)}>
-            <Box sx={{ display: 'grid', gap: 1.75, gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', alignItems: 'start' }}>
-              {TASK_STATUSES.map((status) => {
-                const columnTasks = board.data.columns.find((column) => column.status === status)?.tasks ?? []
-                return (
-                  <BoardColumn
-                    key={status}
-                    status={status}
-                    tasks={columnTasks.filter((task) => matchesFilter(task, filter))}
-                    totalCount={columnTasks.length}
-                    limit={limits[status]}
-                    members={byId}
-                    memberList={members}
-                    criticalIds={criticalIds}
-                    projectId={projectId}
-                    canMove={canMove}
-                    canAssign
-                    onMove={move}
-                    onAssign={reassign}
-                    onQuickAdd={status === 'ToDo' ? quickAdd : undefined}
-                    onError={setProblem}
+          <StatStrip workItems={visible.length} remainingHours={sumHours(visible) - doneHours} completedHours={doneHours} day={day} days={days} />
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: 'minmax(0, 1fr)',
+              alignItems: 'start',
+              // Two columns once the board has room for its 560px minimum beside the side panel; below that the panel drops under the board.
+              '@media (min-width: 1180px)': { gridTemplateColumns: 'minmax(560px, 1fr) clamp(320px, 26vw, 400px)' },
+            }}
+          >
+            <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragging(null)}>
+              <BoardGrid
+                lanes={lanes}
+                visible={visible}
+                limits={limits}
+                totals={totals}
+                collapsed={collapsed}
+                onToggleLane={toggleLane}
+                onToggleAll={toggleAll}
+                fullscreen={fullscreen}
+                onToggleFullscreen={() => setFullscreen((value) => !value)}
+                onAddTask={() => setCreating(true)}
+                toolbarExtra={
+                  isManager ? (
+                    <HairlineButton onClick={() => setSettingsOpen(true)} aria-label="Board settings" title="Board settings" sx={{ width: 32, px: 0 }}>
+                      <SettingsOutlined />
+                    </HairlineButton>
+                  ) : undefined
+                }
+                members={byId}
+                memberList={members}
+                criticalIds={criticalIds}
+                projectId={projectId}
+                onMove={move}
+                onAssign={reassign}
+              />
+              <DragOverlay dropAnimation={DROP_ANIMATION}>
+                {dragging && (
+                  <TaskCardView
+                    lifted
+                    task={dragging}
+                    assignee={dragging.assigneeId ? byId.get(dragging.assigneeId) : undefined}
+                    critical={criticalIds.has(dragging.id)}
                   />
-                )
-              })}
-            </Box>
-            <DragOverlay dropAnimation={DROP_ANIMATION}>
-              {dragging && (
-                <TaskCardView
-                  lifted
-                  task={dragging}
-                  assignee={dragging.assigneeId ? byId.get(dragging.assigneeId) : undefined}
-                  critical={criticalIds.has(dragging.id)}
-                />
-              )}
-            </DragOverlay>
-          </DndContext>
+                )}
+              </DragOverlay>
+            </DndContext>
+            <SidePanel
+              projectId={projectId}
+              projectName={project.data?.name ?? ''}
+              sprint={sprint}
+              sprints={sprints}
+              allTasks={allTasks}
+              members={members}
+              filter={filter}
+              onFilter={setFilter}
+              onTogglePerson={togglePerson}
+              onToggleType={toggleType}
+            />
+          </Box>
         </>
       )}
+
+      {creating && <NewTaskDialog projectId={projectId} sprints={sprints} tasks={projectTasks.data ?? []} defaultSprintId={sprint.id} onClose={() => setCreating(false)} />}
 
       {settingsOpen && <BoardSettingsDialog projectId={projectId} limits={limits} onClose={() => setSettingsOpen(false)} />}
 

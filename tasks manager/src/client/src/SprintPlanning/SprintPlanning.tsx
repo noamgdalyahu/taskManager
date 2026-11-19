@@ -21,6 +21,7 @@ import { useMemberDirectory } from '@/hooks/useMemberDirectory'
 import { useProjectParams } from '@/hooks/useProjectParams'
 import { useSprintSelection } from '@/hooks/useSprintSelection'
 import { formatDay } from '@/lib/format'
+import { SprintCapacity } from '@/SprintPlanning/SprintCapacity/SprintCapacity'
 import { BacklogPicker } from '@/SprintPlanning/BacklogPicker/BacklogPicker'
 import { DependencyChains } from '@/SprintPlanning/DependencyChains/DependencyChains'
 import { PlanComparison } from '@/SprintPlanning/PlanComparison/PlanComparison'
@@ -96,9 +97,9 @@ function PlanningBody({ projectId, projectName, sprint, sprints }: PlanningBodyP
     setNotice('Plan accepted. The suggested assignees are saved.')
   }
 
-  async function startSprint() {
-    await transition.mutateAsync({ sprintId: sprint.id, to: 'start' })
-    navigate(`/p/${projectId}/board/${sprint.id}`)
+  async function startSprint(sprintId = sprint.id) {
+    await transition.mutateAsync({ sprintId, to: 'start' })
+    navigate(`/p/${projectId}/board/${sprintId}`)
   }
 
   const goTo = (id: string) => navigate(`/p/${projectId}/planning/${id}`)
@@ -113,7 +114,7 @@ function PlanningBody({ projectId, projectName, sprint, sprints }: PlanningBodyP
           <>
             <SprintSwitcher sprints={sprints} currentId={sprint.id} onSelect={goTo} />
             {isManager && sprint.status === 'Planned' && (
-              <Button variant="outlined" startIcon={<PlayArrowRounded />} onClick={startSprint} disabled={transition.isPending || sprint.taskCount === 0}>
+              <Button variant="outlined" startIcon={<PlayArrowRounded />} onClick={() => startSprint()} disabled={transition.isPending || sprint.taskCount === 0}>
                 Start sprint
               </Button>
             )}
@@ -128,6 +129,7 @@ function PlanningBody({ projectId, projectName, sprint, sprints }: PlanningBodyP
 
       {(start.error || transition.error || accept.error) && <ErrorState error={start.error ?? transition.error ?? accept.error} />}
 
+      <SprintCapacity sprints={sprints} current={sprint} tasks={tasks.data ?? []} members={members} canStart={isManager} starting={transition.isPending} onStart={(id) => void startSprint(id)} />
       <PlanSummary sprint={sprint} memberCount={members.length} backlogCount={backlogCount} plan={plan} />
       {plan && <PlanWarnings warnings={plan.warnings} />}
 

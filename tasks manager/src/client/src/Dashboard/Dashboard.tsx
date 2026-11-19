@@ -11,6 +11,8 @@ import { PageLoading } from '@/common/PageLoading/PageLoading'
 import { SprintSwitcher } from '@/common/SprintSwitcher/SprintSwitcher'
 import { AtRiskList } from '@/Dashboard/AtRiskList/AtRiskList'
 import { StatusPie } from '@/Dashboard/StatusPie/StatusPie'
+import { BurndownChart } from '@/common/BurndownChart/BurndownChart'
+import { TypeBars } from '@/Dashboard/TypeBars/TypeBars'
 import { KpiRow } from '@/Dashboard/KpiRow/KpiRow'
 import { WorkloadPanel } from '@/Dashboard/WorkloadPanel/WorkloadPanel'
 import { useMemberDirectory } from '@/hooks/useMemberDirectory'
@@ -43,6 +45,7 @@ export function Dashboard() {
   }
 
   const data = dashboard.data
+  const sprintTasks = board.data?.columns.flatMap((column) => column.tasks) ?? []
   const statusCounts = Object.fromEntries(TASK_STATUSES.map((status) => [status, board.data?.columns.find((column) => column.status === status)?.tasks.length ?? 0])) as Record<TaskStatus, number>
 
   return (
@@ -61,14 +64,16 @@ export function Dashboard() {
 
       {data && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          <KpiRow dashboard={data} sprint={sprint} inQa={board.data?.columns.find((column) => column.status === 'InQA')?.tasks ?? []} />
+          <KpiRow dashboard={data} sprint={sprint} tasks={sprintTasks} />
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
             {/* The tasks that need attention on the left; the status split and workload beside them. */}
             <Box sx={{ flex: '1 1 520px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <BurndownChart ideal={data.ideal} actual={data.actual} forecast={data.forecast} />
               <AtRiskList tasks={data.atRisk} members={byId} projectId={projectId} />
             </Box>
             <Box sx={{ flex: '1 1 340px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <StatusPie counts={statusCounts} />
+              <TypeBars tasks={sprintTasks} />
               <WorkloadPanel
                 title="Workload (planned vs capacity)"
                 rows={data.workload.map((w) => ({ memberId: w.memberId, name: w.name, value: w.assignedHours, total: w.capacityHours }))}

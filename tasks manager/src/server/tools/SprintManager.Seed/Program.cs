@@ -53,6 +53,28 @@ if (arguments.Contains("--fill-project"))
     return;
 }
 
+if (arguments.Contains("--list-accounts"))
+{
+    // Read-only: who exists, and which projects each account can see.
+    var allUsers = await context.Users.Find(Builders<UserDocument>.Filter.Empty).ToListAsync();
+    var allProjects = await context.Projects.Find(Builders<ProjectDocument>.Filter.Empty).ToListAsync();
+    foreach (var user in allUsers)
+        Console.WriteLine($"{user.Email,-45} {user.Name,-12} {user.Role,-8} projects: {string.Join(", ", allProjects.Where(p => p.MemberIds.Contains(user.Id) || p.OwnerId == user.Id).Select(p => p.Name))}");
+    return;
+}
+
+if (arguments.Contains("--add-typed-tasks"))
+{
+    await AddTypedTasksAsync(Option("--owner", "noa" + Domain), Option("--project", "Task Manager"));
+    return;
+}
+
+if (arguments.Contains("--task-manager-project"))
+{
+    await SeedTaskManagerProjectAsync(Option("--owner", "noa" + Domain));
+    return;
+}
+
 if (await users.GetByEmailAsync(new EmailAddress("noa" + Domain)) is not null)
 {
     Console.WriteLine("Demo data already exists. Run with --reset to recreate it.");
@@ -329,6 +351,242 @@ async Task SeedActiveSprintAsync(Project project, Dictionary<string, User> team,
 
     Console.WriteLine($"Sprint 2: {plan.Count} tasks ({plan.Count(t => t.Status is WorkItemStatus.Done)} done, {plan.Count(t => t.Status is WorkItemStatus.InProgress)} in progress, {plan.Count(t => t.Status is WorkItemStatus.InQA)} in QA), "
         + $"critical path {result.CriticalPathLength}.");
+}
+
+// ---- The "Task Manager" project: a programmers + QA team, typed tasks --------------------------------
+//   dotnet run --project tools/SprintManager.Seed -- --task-manager-project [--owner you@example.com]
+// Only adds data (never resets). The owner must already exist; the seven team members get their own domain.
+// Note: a project owned by a @demo account is removed by --reset together with the demo data.
+
+async Task SeedTaskManagerProjectAsync(string ownerEmail)
+{
+    const string teamDomain = "@taskmanager.sprintmanager.local";
+    var owner = await users.GetByEmailAsync(new EmailAddress(ownerEmail));
+    if (owner is null)
+    {
+        Console.WriteLine($"No account '{ownerEmail}'. Pass an existing account with --owner <email>.");
+        return;
+    }
+    if (await users.GetByEmailAsync(new EmailAddress("omer" + teamDomain)) is not null
+        || await context.Projects.Find(p => p.Name == "Task Manager" && p.OwnerId == owner.Id.Value).AnyAsync())
+    {
+        Console.WriteLine("The Task Manager project already exists; nothing was added.");
+        return;
+    }
+
+    var now = DateTimeOffset.UtcNow;
+    var today = DateOnly.FromDateTime(DateTime.Now);
+    var start = CurrentSprintStart(today);
+
+    (string Name, string Group)[] people =
+    [
+        ("Omer", "Programmer"), ("Lior", "Programmer"), ("Tamar", "Programmer"), ("Yuval", "Programmer"), ("Gal", "Programmer"),
+        ("Shira", "QA"), ("Ido", "QA"),
+    ];
+    var team = new Dictionary<string, User>();
+    foreach (var (name, _) in people)
+    {
+        var user = new User(MemberId.New(), new EmailAddress(name.ToLowerInvariant() + teamDomain), hasher.Hash(Password), name, UserRole.Member,
+            new Dictionary<string, SkillLevel>(StringComparer.OrdinalIgnoreCase), new Hours(40), now.AddDays(-20));
+        await users.AddAsync(user);
+        team[name] = user;
+    }
+
+    var project = new Project(ProjectId.New(), "Task Manager", "The task manager itself: built and tested by the programmers and the QA team.",
+        owner.Id, [owner.Id, .. team.Values.Select(u => u.Id)], false, now.AddDays(-14),
+        new Dictionary<WorkItemStatus, int> { [WorkItemStatus.InProgress] = 4, [WorkItemStatus.InQA] = 3 });
+    await projects.AddAsync(project);
+
+    var sprint = new Sprint(SprintId.New(), project.Id, "Sprint 1", start, start.AddDays(11), SprintStatus.Active, At(start.AddDays(-4)));
+    await sprints.AddAsync(sprint);
+
+    var created = At(start.AddDays(-3));
+    var ids = new Dictionary<string, TaskId>();
+    TaskItem Make(string key, TaskType type, string title, double hours, WorkItemStatus status, string? who, string[]? after = null, int? doneDay = null, int? deadlineIn = null, bool inSprint = true)
+    {
+        var finished = doneDay is { } d ? At(start.AddDays(WorkingOffset(d)), 16) : (DateTimeOffset?)null;
+        var task = new TaskItem(TaskId.New(), project.Id, inSprint ? sprint.Id : null, title, "", new Hours(hours), deadlineIn is { } days ? today.AddDays(days) : null,
+            status, who is null ? null : team.GetValueOrDefault(who)?.Id ?? owner.Id, [], (after ?? []).Select(a => ids[a]).ToList(), created, finished ?? created,
+            status is WorkItemStatus.Done ? finished : null, type);
+        ids[key] = task.Id;
+        return task;
+    }
+
+    var plan = new List<TaskItem>
+    {
+        Make("epic", TaskType.Epic, "Task Manager v1 release", 4, WorkItemStatus.InProgress, "Noa"),
+        Make("schema", TaskType.Migration, "Migrate task storage to the new schema", 8, WorkItemStatus.Done, "Omer", doneDay: 0),
+        Make("mockups", TaskType.DesignTask, "Design the sprint board mockups", 8, WorkItemStatus.Done, "Tamar", doneDay: 1),
+        Make("ci", TaskType.Infrastructure, "CI pipeline with build and test stages", 6, WorkItemStatus.Done, "Gal", doneDay: 1),
+        Make("testplan", TaskType.TestingQa, "Test plan for the sprint board", 6, WorkItemStatus.Done, "Shira", doneDay: 2),
+        Make("jwt", TaskType.Security, "Harden JWT login and role checks", 10, WorkItemStatus.Done, "Lior", ["schema"], doneDay: 2),
+        Make("boardui", TaskType.Integration, "Connect the board UI to the sprint API", 12, WorkItemStatus.InProgress, "Tamar", ["mockups"]),
+        Make("docker", TaskType.Infrastructure, "Dockerize the API and the client", 6, WorkItemStatus.InProgress, "Gal", ["ci"]),
+        Make("jumpback", TaskType.Regression, "Fix: a moved card jumps back after refresh", 4, WorkItemStatus.InProgress, "Omer"),
+        Make("totals", TaskType.Regression, "Fix: wrong total hours after filtering", 3, WorkItemStatus.InQA, "Yuval"),
+        Make("authqa", TaskType.TestingQa, "Regression suite for login and roles", 8, WorkItemStatus.InQA, "Shira", ["jwt"]),
+        Make("dnd", TaskType.Integration, "Drag and drop between columns", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
+        Make("a11y", TaskType.Accessibility, "Keyboard and screen reader support on the board", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
+        Make("perf", TaskType.Performance, "Make the board load fast with 500 tasks", 10, WorkItemStatus.ToDo, "Omer", ["boardui"], deadlineIn: 6),
+        Make("staging", TaskType.Infrastructure, "Staging deployment", 6, WorkItemStatus.ToDo, "Gal", ["docker"]),
+        Make("mail", TaskType.Integration, "Connect the email notifications provider", 8, WorkItemStatus.ToDo, "Lior"),
+        Make("apidocs", TaskType.Documentation, "Write the API reference", 6, WorkItemStatus.ToDo, "Lior"),
+        Make("guide", TaskType.Documentation, "User guide for managers and members", 6, WorkItemStatus.ToDo, "Tamar", deadlineIn: 4),
+        Make("dndqa", TaskType.TestingQa, "Exploratory testing of drag and drop", 6, WorkItemStatus.ToDo, "Ido", ["dnd"]),
+        Make("browsers", TaskType.TestingQa, "Cross-browser checks: Chrome, Firefox, Safari", 6, WorkItemStatus.ToDo, "Ido", ["boardui"]),
+        Make("load", TaskType.Performance, "Load test the API", 8, WorkItemStatus.ToDo, "Ido", ["perf"]),
+        Make("pentest", TaskType.Security, "Security test of the public endpoints", 8, WorkItemStatus.ToDo, "Shira", ["jwt"]),
+        // Backlog: not planned into a sprint yet.
+        Make("mobile", TaskType.Epic, "Mobile app", 8, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("comments", TaskType.Migration, "Move comments to their own collection", 6, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("contrast", TaskType.Accessibility, "Colour contrast audit of every screen", 4, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("slack", TaskType.Integration, "Slack integration for sprint updates", 10, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("budget", TaskType.Performance, "Page load budget enforced in CI", 4, WorkItemStatus.ToDo, null, inSprint: false),
+    };
+
+    foreach (var task in plan)
+    {
+        await tasks.AddAsync(task);
+        await history.AddManyAsync(CreationHistory(task, owner));
+        if (task.AssigneeId is not { } assignee)
+            continue;
+        if (task.Status is WorkItemStatus.Done)
+            await timeLogs.AddAsync(new TimeLog(Guid.NewGuid(), task.Id, assignee, new Hours(task.Estimate.Value * 1.1), DateOnly.FromDateTime(task.CompletedAt!.Value.LocalDateTime), null));
+        else if (task.Status is WorkItemStatus.InProgress or WorkItemStatus.InQA)
+            await timeLogs.AddAsync(new TimeLog(Guid.NewGuid(), task.Id, assignee, new Hours(task.Estimate.Value * 0.5), today.AddDays(-1), "work so far"));
+    }
+    await comments.AddAsync(new Comment(Guid.NewGuid(), ids["totals"], team["Shira"].Id, "Verified on Chrome, checking the filtered view once more.", At(today, 10)));
+    await comments.AddAsync(new Comment(Guid.NewGuid(), ids["jumpback"], team["Omer"].Id, "Reproduced: the optimistic update is overwritten by a stale response.", At(today, 9)));
+
+    Console.WriteLine($"Project 'Task Manager' created: owner {owner.Email.Value}, {team.Count} members (5 programmers, 2 QA).");
+    Console.WriteLine($"  Sprint 1 (active, {start:yyyy-MM-dd} .. {start.AddDays(11):yyyy-MM-dd}): {plan.Count(t => t.SprintId is not null)} tasks, backlog: {plan.Count(t => t.SprintId is null)} tasks.");
+    Console.WriteLine($"  Password for every new account: {Password}");
+    foreach (var (name, group) in people)
+        Console.WriteLine($"    {group,-10} {team[name].Email.Value}");
+}
+
+// ---- More tasks for a project: three for every task type ---------------------------------------------
+//   dotnet run --project tools/SprintManager.Seed -- --add-typed-tasks --owner you@example.com --project "taskManager"
+// The programmers and QA accounts are added to the project as members first. See --list-accounts for the names.
+// Only adds data. A task whose title already exists in the project is skipped, so running it twice adds nothing.
+// Statuses stay inside the work in progress limits (In progress 4, In QA 3) so the board does not turn red.
+
+async Task AddTypedTasksAsync(string ownerEmail, string projectName)
+{
+    const string teamDomain = "@taskmanager.sprintmanager.local";
+    var owner = await users.GetByEmailAsync(new EmailAddress(ownerEmail));
+    var document = owner is null ? null : await context.Projects.Find(p => p.Name == projectName && p.OwnerId == owner.Id.Value).FirstOrDefaultAsync();
+    if (owner is null || document is null)
+    {
+        Console.WriteLine($"No '{projectName}' project owned by '{ownerEmail}'. Check the names with --list-accounts.");
+        return;
+    }
+
+    var project = (await projects.GetAsync(new ProjectId(document.Id)))!;
+
+    // The programmers and QA accounts do the work; make sure they are members of this project.
+    var team = new Dictionary<string, User>();
+    foreach (var name in new[] { "Omer", "Lior", "Tamar", "Yuval", "Gal", "Shira", "Ido" })
+        if (await users.GetByEmailAsync(new EmailAddress(name.ToLowerInvariant() + teamDomain)) is { } member)
+            team[name] = member;
+    var missing = team.Values.Where(u => !project.MemberIds.Contains(u.Id)).ToList();
+    if (missing.Count > 0)
+    {
+        project = project with { MemberIds = [.. project.MemberIds, .. missing.Select(u => u.Id)] };
+        await projects.UpdateAsync(project);
+        Console.WriteLine($"Added {missing.Count} members to '{project.Name}': {string.Join(", ", missing.Select(u => u.Name))}.");
+    }
+
+    // The sprint the tasks go into: the active one, else one being planned, else a new "Sprint 1" that starts now.
+    var projectSprints = await sprints.GetForProjectAsync(project.Id);
+    var sprint = projectSprints.FirstOrDefault(s => s.Status == SprintStatus.Active) ?? projectSprints.FirstOrDefault(s => s.Status == SprintStatus.Planned);
+    if (sprint is null)
+    {
+        var begin = CurrentSprintStart(DateOnly.FromDateTime(DateTime.Now));
+        sprint = new Sprint(SprintId.New(), project.Id, "Sprint 1", begin, begin.AddDays(11), SprintStatus.Active, At(begin.AddDays(-2)));
+        await sprints.AddAsync(sprint);
+        Console.WriteLine($"Created {sprint.Name} ({sprint.StartDate:yyyy-MM-dd} .. {sprint.EndDate:yyyy-MM-dd}).");
+    }
+
+    var existing = await tasks.GetForProjectAsync(project.Id);
+    var known = existing.Select(t => t.Title).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var byTitle = existing.ToDictionary(t => t.Title, t => t.Id, StringComparer.OrdinalIgnoreCase);
+
+    var today = DateOnly.FromDateTime(DateTime.Now);
+    var start = sprint.StartDate;
+    var created = At(start.AddDays(-2));
+    var added = new List<TaskItem>();
+
+    void Add(TaskType type, string title, double hours, WorkItemStatus status, string? who, string? after = null, int? doneDay = null, bool inSprint = true)
+    {
+        if (known.Contains(title))
+            return;
+        var finished = doneDay is { } d ? At(start.AddDays(WorkingOffset(d)), 16) : (DateTimeOffset?)null;
+        MemberId? assignee = who is null ? null : (team.TryGetValue(who, out var u) ? u.Id : owner.Id);
+        var deps = after is not null && byTitle.TryGetValue(after, out var dep) ? new List<TaskId> { dep } : [];
+        var task = new TaskItem(TaskId.New(), project.Id, inSprint ? sprint.Id : null, title, "", new Hours(hours), null, status, assignee, [], deps,
+            created, finished ?? created, status is WorkItemStatus.Done ? finished : null, type);
+        added.Add(task);
+        known.Add(title);
+        byTitle[title] = task.Id;
+    }
+
+    // Epic
+    Add(TaskType.Epic, "Reporting and analytics", 4, WorkItemStatus.ToDo, "Noa");
+    Add(TaskType.Epic, "Notifications and reminders", 4, WorkItemStatus.ToDo, "Noa");
+    Add(TaskType.Epic, "Public API for partners", 6, WorkItemStatus.ToDo, null, inSprint: false);
+    // Design Task
+    Add(TaskType.DesignTask, "Design the task detail page", 6, WorkItemStatus.ToDo, "Tamar", "Design the sprint board mockups");
+    Add(TaskType.DesignTask, "Design empty and error states", 4, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.DesignTask, "Icon set and spacing audit", 4, WorkItemStatus.Done, "Tamar", doneDay: 2);
+    // Documentation
+    Add(TaskType.Documentation, "Onboarding guide for new developers", 5, WorkItemStatus.ToDo, "Gal");
+    Add(TaskType.Documentation, "Document the board keyboard shortcuts", 3, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Documentation, "Architecture decision records", 4, WorkItemStatus.Done, "Lior", doneDay: 2);
+    // Testing / QA
+    Add(TaskType.TestingQa, "Test cases for sprint planning", 6, WorkItemStatus.ToDo, "Shira");
+    Add(TaskType.TestingQa, "Smoke test checklist for releases", 4, WorkItemStatus.Done, "Ido", doneDay: 1);
+    Add(TaskType.TestingQa, "Screen reader test pass", 6, WorkItemStatus.ToDo, "Ido", "Keyboard and screen reader support on the board");
+    // Performance
+    Add(TaskType.Performance, "Cache the dashboard queries", 6, WorkItemStatus.ToDo, "Lior");
+    Add(TaskType.Performance, "Reduce the bundle size of the board page", 5, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Performance, "Profile slow sprint planning runs", 6, WorkItemStatus.ToDo, "Omer");
+    // Security
+    Add(TaskType.Security, "Rate limit the login endpoint", 5, WorkItemStatus.ToDo, "Lior", "Harden JWT login and role checks");
+    Add(TaskType.Security, "Audit dependencies for known vulnerabilities", 4, WorkItemStatus.Done, "Gal", doneDay: 2);
+    Add(TaskType.Security, "Store and rotate signing keys safely", 5, WorkItemStatus.ToDo, "Gal");
+    // Infrastructure / DevOps
+    Add(TaskType.Infrastructure, "Database backups and restore test", 6, WorkItemStatus.ToDo, "Gal");
+    Add(TaskType.Infrastructure, "Health checks and uptime alerts", 5, WorkItemStatus.InQA, "Gal");
+    Add(TaskType.Infrastructure, "Preview environments for pull requests", 8, WorkItemStatus.ToDo, null, inSprint: false);
+    // Migration
+    Add(TaskType.Migration, "Move task history to its own collection", 6, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Migration, "Upgrade to the latest .NET and React versions", 8, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Migration, "Import tasks from a CSV file", 6, WorkItemStatus.ToDo, null, inSprint: false);
+    // Accessibility
+    Add(TaskType.Accessibility, "Fix the focus order in dialogs", 4, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Accessibility, "Add text alternatives to the charts", 4, WorkItemStatus.ToDo, "Tamar");
+    Add(TaskType.Accessibility, "High contrast mode check", 4, WorkItemStatus.ToDo, null, inSprint: false);
+    // Integration
+    Add(TaskType.Integration, "Link GitHub pull requests to tasks", 8, WorkItemStatus.ToDo, "Lior");
+    Add(TaskType.Integration, "Calendar export of sprint dates", 5, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Integration, "Webhook for status changes", 6, WorkItemStatus.ToDo, null, inSprint: false);
+    // Regression
+    Add(TaskType.Regression, "Fix: sprint day is wrong after midnight", 3, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Regression, "Fix: assignee menu closes on the first click", 2, WorkItemStatus.Done, "Yuval", doneDay: 2);
+    Add(TaskType.Regression, "Fix: dashboard forecast is missing after a reset", 3, WorkItemStatus.ToDo, "Lior");
+
+    foreach (var task in added)
+    {
+        await tasks.AddAsync(task);
+        await history.AddManyAsync(CreationHistory(task, owner));
+        if (task.Status is WorkItemStatus.Done && task.AssigneeId is { } who)
+            await timeLogs.AddAsync(new TimeLog(Guid.NewGuid(), task.Id, who, new Hours(task.Estimate.Value * 1.1), DateOnly.FromDateTime(task.CompletedAt!.Value.LocalDateTime), null));
+    }
+
+    Console.WriteLine($"Added {added.Count} tasks to '{project.Name}' ({added.Count(t => t.SprintId is not null)} in {sprint.Name}, {added.Count(t => t.SprintId is null)} in the backlog).");
+    foreach (var group in added.GroupBy(t => t.Type).OrderBy(g => g.Key))
+        Console.WriteLine($"  {group.Key,-15} {group.Count()}");
 }
 
 // ================================================================================================

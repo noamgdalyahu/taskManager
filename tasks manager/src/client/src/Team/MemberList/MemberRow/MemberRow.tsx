@@ -1,23 +1,31 @@
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined'
 import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
+import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { TeamMemberDto } from '@/api/types'
 import { MemberAvatar } from '@/common/MemberAvatar/MemberAvatar'
 import { RemoveMemberDialog } from '@/Team/MemberList/MemberRow/RemoveMemberDialog/RemoveMemberDialog'
 
+export interface MemberStats {
+  tasks: number
+  hours: number
+  capacity: number
+  sprintName?: string
+}
+
 interface MemberRowProps {
+  stats?: MemberStats
   member: TeamMemberDto
   projectId: string
   isOwner: boolean
   canRemove: boolean
 }
 
-export function MemberRow({ member, projectId, isOwner, canRemove }: MemberRowProps) {
+export function MemberRow({ member, stats, projectId, isOwner, canRemove }: MemberRowProps) {
   const [removing, setRemoving] = useState(false)
-  const skills = Object.entries(member.skills).sort(([, a], [, b]) => b - a)
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', py: 1.75, borderBottom: 1, borderColor: 'divider' }}>
@@ -33,18 +41,20 @@ export function MemberRow({ member, projectId, isOwner, canRemove }: MemberRowPr
           {member.email}
         </Typography>
       </Box>
-      <Box sx={{ flex: '2 1 220px', display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-        {skills.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No skills listed. The assignment can only give them tasks that need no particular skill.
+      <Box sx={{ flex: '2 1 240px', minWidth: 0 }}>
+        {stats && (
+          <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+            <strong>{stats.tasks}</strong> {stats.tasks === 1 ? 'task' : 'tasks'} · <strong>{Math.round(stats.hours * 10) / 10} h</strong> assigned of {Math.round(stats.capacity * 10) / 10} h
+            {stats.sprintName ? ` in ${stats.sprintName}` : ''}
           </Typography>
-        ) : (
-          skills.map(([skill, level]) => <Chip key={skill} size="small" variant="outlined" label={`${skill} ${level}/5`} />)
         )}
+        <Typography variant="body2" color="text.secondary">
+          {member.weeklyCapacityHours} h/week
+        </Typography>
       </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ flex: '0 0 80px', textAlign: 'right' }}>
-        {member.weeklyCapacityHours} h/week
-      </Typography>
+      <Button size="small" variant="outlined" component={Link} to={`/p/${projectId}/board?assignee=${member.id}`} aria-label={`Show ${member.name} on the board`}>
+        On the board
+      </Button>
       <Box sx={{ flex: '0 0 44px' }}>
         {canRemove && (
           <IconButton aria-label={`Remove ${member.name}`} onClick={() => setRemoving(true)} sx={{ color: 'text.secondary' }}>

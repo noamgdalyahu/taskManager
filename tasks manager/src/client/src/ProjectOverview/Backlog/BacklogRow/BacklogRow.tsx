@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography'
 import { Link } from 'react-router-dom'
 import type { TaskDto } from '@/api/types'
 import { StatusChip } from '@/common/StatusChip/StatusChip'
-import { TagChip } from '@/common/TagChip/TagChip'
+import { TypeChip } from '@/common/TypeChip/TypeChip'
 import { formatHours } from '@/lib/format'
 
 interface BacklogRowProps {
@@ -20,11 +20,9 @@ export function BacklogRow({ task, place, to }: BacklogRowProps) {
         <Typography component={Link} to={to} sx={{ fontWeight: 600, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>
           {task.title}
         </Typography>
-        {task.requiredSkills.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-            {task.requiredSkills.map((skill) => (
-              <TagChip key={skill} label={skill} />
-            ))}
+        {task.type && (
+          <Box sx={{ mt: 0.5 }}>
+            <TypeChip type={task.type} />
           </Box>
         )}
       </Box>

@@ -7,6 +7,7 @@ type S = components['schemas']
 export type Role = S['UserRole']
 export type TaskStatus = S['WorkItemStatus']
 export type SprintStatus = S['SprintStatus']
+export type TaskType = NonNullable<S['NullableOfTaskType']>
 
 export type UserDto = S['UserDto']
 export type AuthResponse = S['AuthResponse']
@@ -58,4 +59,36 @@ export const STATUS_LABEL: Record<TaskStatus, string> = {
   InProgress: 'In progress',
   InQA: 'In QA',
   Done: 'Done',
+}
+
+/** The kinds of work, in the order they are offered. */
+export const TASK_TYPES = ['Epic', 'DesignTask', 'Documentation', 'TestingQa', 'Performance', 'Security', 'Infrastructure', 'Migration', 'Accessibility', 'Integration', 'Regression'] as const satisfies readonly TaskType[]
+
+export const TASK_TYPE_LABEL: Record<TaskType, string> = {
+  Epic: 'Epic',
+  DesignTask: 'Design Task',
+  Documentation: 'Documentation',
+  TestingQa: 'Testing / QA',
+  Performance: 'Performance',
+  Security: 'Security',
+  Infrastructure: 'Infrastructure / DevOps',
+  Migration: 'Migration',
+  Accessibility: 'Accessibility',
+  Integration: 'Integration',
+  Regression: 'Regression',
+}
+
+/** What each type is for, shown as help text where a type is chosen. */
+export const TASK_TYPE_PURPOSE: Record<TaskType, string> = {
+  Epic: 'Groups multiple related features and stories',
+  DesignTask: 'UI/UX design and prototyping',
+  Documentation: 'Write or update technical documentation',
+  TestingQa: 'Test functionality and find issues',
+  Performance: 'Improve speed and resource usage',
+  Security: 'Fix vulnerabilities or improve security',
+  Infrastructure: 'CI/CD, deployment, servers, Docker',
+  Migration: 'Move data, databases, or frameworks',
+  Accessibility: 'Improve usability for people with disabilities',
+  Integration: 'Connect external APIs or services',
+  Regression: 'Fix something that broke after a previous change',
 }

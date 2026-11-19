@@ -10,7 +10,7 @@ import { ErrorState } from '@/common/ErrorState/ErrorState'
 import { PageHeader } from '@/common/PageHeader/PageHeader'
 import { PageLoading } from '@/common/PageLoading/PageLoading'
 import { JoinProjectDialog } from '@/Projects/JoinProjectDialog/JoinProjectDialog'
-import { NewProjectDialog } from '@/Projects/NewProjectDialog/NewProjectDialog'
+import { NewProjectDialog } from '@/common/NewProjectDialog/NewProjectDialog'
 import { ProjectCard } from '@/Projects/ProjectCard/ProjectCard'
 
 export function Projects() {

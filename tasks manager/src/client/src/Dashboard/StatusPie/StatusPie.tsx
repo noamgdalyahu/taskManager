@@ -7,10 +7,10 @@ import { tokens } from '@/theme/tokens'
 
 /** One colour per status, the same everywhere it appears. "To do" is the neutral gray: not started has no hue. */
 const STATUS_COLOR: Record<TaskStatus, string> = {
-  ToDo: tokens.color.idealLine,
-  InProgress: tokens.color.primary,
-  InQA: tokens.color.forecast,
-  Done: '#12968A',
+  ToDo: tokens.color.stTodo,
+  InProgress: tokens.color.stProgress,
+  InQA: tokens.color.stQa,
+  Done: tokens.color.stDone,
 }
 
 const SIZE = 168

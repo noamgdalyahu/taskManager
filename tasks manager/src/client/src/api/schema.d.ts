@@ -1570,6 +1570,7 @@ export interface components {
             dependsOn: string[] | null;
             /** Format: uuid */
             sprintId: string | null;
+            type?: components["schemas"]["NullableOfTaskType2"];
         };
         DashboardDto: {
             /** Format: uuid */
@@ -1677,6 +1678,13 @@ export interface components {
             /** Format: double */
             blockingShare: number;
         };
+        /** @enum {unknown|null} */
+        NullableOfTaskType: "Epic" | "DesignTask" | "Documentation" | "TestingQa" | "Performance" | "Security" | "Infrastructure" | "Migration" | "Accessibility" | "Integration" | "Regression" | null;
+        /**
+         * @default null
+         * @enum {unknown|null}
+         */
+        NullableOfTaskType2: "Epic" | "DesignTask" | "Documentation" | "TestingQa" | "Performance" | "Security" | "Infrastructure" | "Migration" | "Accessibility" | "Integration" | "Regression" | null;
         PlanComparisonDto: {
             isComparable: boolean;
             message: string | null;
@@ -1892,6 +1900,7 @@ export interface components {
             updatedAt: string;
             /** Format: date-time */
             completedAt: string | null;
+            type: components["schemas"]["NullableOfTaskType"];
         };
         TeamMemberDto: {
             /** Format: uuid */
@@ -1944,6 +1953,7 @@ export interface components {
             sprintId: string | null;
             /** Format: uuid */
             assigneeId: string | null;
+            type?: components["schemas"]["NullableOfTaskType2"];
         };
         UserDto: {
             /** Format: uuid */

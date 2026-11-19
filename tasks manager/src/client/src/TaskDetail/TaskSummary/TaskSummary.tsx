@@ -8,7 +8,7 @@ import { useAssignTask, useChangeStatus } from '@/api/tasks'
 import { STATUS_LABEL, TASK_STATUSES, type TaskDto, type TaskStatus, type TeamMemberDto } from '@/api/types'
 import { messageOf } from '@/common/ErrorState/ErrorState'
 import { StatusChip } from '@/common/StatusChip/StatusChip'
-import { TagChip } from '@/common/TagChip/TagChip'
+import { TypeChip } from '@/common/TypeChip/TypeChip'
 import { Surface } from '@/common/Surface/Surface'
 import { formatDay, formatHours } from '@/lib/format'
 
@@ -82,12 +82,10 @@ export function TaskSummary({ task, members, allTasks, sprintName }: TaskSummary
         <Typography>{sprintName ?? 'Not in a sprint'}</Typography>
       </Field>
 
-      {task.requiredSkills.length > 0 && (
-        <Field label="Skills needed">
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-            {task.requiredSkills.map((skill) => (
-              <TagChip key={skill} label={skill} />
-            ))}
+      {task.type && (
+        <Field label="Type">
+          <Box>
+            <TypeChip type={task.type} />
           </Box>
         </Field>
       )}
