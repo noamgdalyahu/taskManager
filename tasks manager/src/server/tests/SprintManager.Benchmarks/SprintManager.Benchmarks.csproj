@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SprintManager.Core\SprintManager.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+</Project>

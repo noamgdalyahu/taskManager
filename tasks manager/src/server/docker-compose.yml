@@ -1,0 +1,48 @@
+# The whole system in containers:   docker compose up -d --build   (from src/server)
+#
+#   client  http://localhost:8081   React app served by nginx, which forwards /api to the server
+#   server  http://localhost:5081   ASP.NET Core API (also reachable directly, for example /health)
+#   mongo   localhost:27018         MongoDB 7 (27018, so it never clashes with a local MongoDB on 27017)
+#
+# Demo data, from src/server, against this database:
+#   dotnet run --project tools/SprintManager.Seed -- --reset --mongo mongodb://localhost:27018
+#
+# Development does not need any of this: run the server and `npm run dev` directly (see docs/running.md).
+services:
+  mongo:
+    image: mongo:7
+    container_name: sprintmanager-mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  server:
+    build: .
+    container_name: sprintmanager-server
+    depends_on:
+      mongo:
+        condition: service_healthy   # the API creates its indexes at startup, so the database must be answering first
+    environment:
+      Mongo__ConnectionString: mongodb://mongo:27017
+      Mongo__DatabaseName: sprintmanager
+      # A placeholder so the demo starts. Set JWT_SIGNING_KEY (32+ characters) for anything real; never commit a real key.
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:-compose-demo-signing-key-change-me-0123456789}
+    ports:
+      - "5081:8080"
+
+  client:
+    build: ../client
+    container_name: sprintmanager-client
+    depends_on:
+      - server
+    ports:
+      - "8081:80"
+
+volumes:
+  mongo-data:

@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "skills": {
+    "apple-design": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "skillPath": "skills/apple-design/SKILL.md",
+      "computedHash": "118d450c2d6ca54fee5f56cf8883fa3231bc2d917bb8f5a3f87488162c55fac9"
+    },
+    "liquid-glass": {
+      "source": "haider-nawaz/liquid-glass-skill",
+      "sourceType": "github",
+      "skillPath": "plugins/liquid-glass/skills/liquid-glass/SKILL.md",
+      "computedHash": "e268556d4073ab0a69f68e8cc957a5a0912d9bcbb5b64e32278eed9f99353ea4"
+    },
+    "liquid-glass-design": {
+      "source": "affaan-m/ECC",
+      "sourceType": "github",
+      "skillPath": "skills/liquid-glass-design/SKILL.md",
+      "computedHash": "2f9186dd3f5f8a9f480e90986c926aac0f3584f67b7dc9f20d90ddb874745b8f"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SprintManager.Core\SprintManager.Core.csproj" />
+    <ProjectReference Include="..\..\SprintManager.Data\SprintManager.Data.csproj" />
+    <ProjectReference Include="..\..\SprintManager.Api\SprintManager.Api.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "skills": {
+    "modern-csharp-coding-standards": {
+      "source": "Aaronontheweb/dotnet-skills",
+      "sourceType": "github",
+      "skillPath": "skills/csharp-coding-standards/SKILL.md",
+      "computedHash": "7c275063c6e3cdf63b505293a4dae8d12bae0e7697c1cae5d2085110ce8d2dca"
+    }
+  }
+}
