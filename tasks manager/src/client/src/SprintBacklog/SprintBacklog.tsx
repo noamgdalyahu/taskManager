@@ -38,12 +38,16 @@ export function SprintBacklog() {
   const project = useProject(projectId)
   const sprints = useSprints(projectId)
   const tasks = useProjectTasks(projectId)
-  const { byId } = useMemberDirectory(projectId)
+  const { byId, members } = useMemberDirectory(projectId)
   const update = useUpdateTask()
 
   const [search, setSearch] = useState('')
   const [state, setState] = useState('')
-  const [parents, setParents] = useState(true)
+  // Several can be chosen. 'none' means work that nobody is assigned to, otherwise a member id. Empty means everyone.
+  const [assignees, setAssignees] = useState<string[]>([])
+  // Several sprints can be chosen too. 'none' means work that is in no sprint. Empty means all.
+  const [sprintFilter, setSprintFilter] = useState<string[]>([])
+  const [parents, setParents] = useState(false)
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [columns, setColumns] = useState<Set<BacklogColumn>>(() => new Set<BacklogColumn>(['state', 'assignee', 'hours']))
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
@@ -57,10 +61,12 @@ export function SprintBacklog() {
     return (tasks.data ?? [])
       .filter((task) => !needle || task.title.toLowerCase().includes(needle))
       .filter((task) => !state || task.status === state)
+      .filter((task) => assignees.length === 0 || assignees.includes(task.assigneeId ?? 'none'))
+      .filter((task) => sprintFilter.length === 0 || sprintFilter.includes(task.sprintId ?? 'none'))
       .sort((a, b) => a.title.localeCompare(b.title))
-  }, [tasks.data, search, state])
+  }, [tasks.data, search, state, assignees, sprintFilter])
 
-  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading />
+  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading shape="list" />
   const error = project.error ?? sprints.error ?? tasks.error
   if (error) return <ErrorState error={error} onRetry={() => void tasks.refetch()} />
 
@@ -100,6 +106,80 @@ export function SprintBacklog() {
           {TASK_STATUSES.map((status) => (
             <MenuItem key={status} value={status}>
               {STATUS_LABEL[status]}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label="Assignee"
+          value={assignees}
+          onChange={(event) => {
+            const value = event.target.value as unknown as string[]
+            // "Anyone" clears the choice; otherwise the chosen people and "Not assigned" add up.
+            setAssignees(value.includes('') ? [] : value)
+          }}
+          slotProps={{
+            select: {
+              multiple: true,
+              displayEmpty: true,
+              renderValue: (selected) => {
+                const chosen = selected as string[]
+                if (chosen.length === 0) return 'Anyone'
+                const names = chosen.map((id) => (id === 'none' ? 'Not assigned' : (members.find((member) => member.id === id)?.name ?? '')))
+                return names.length <= 2 ? names.join(', ') : `${names.length} selected`
+              },
+            },
+            inputLabel: { shrink: true },
+          }}
+          sx={{ minWidth: 180, maxWidth: 260, '& .MuiInputBase-root': { minHeight: 32, fontSize: '0.8125rem' } }}
+        >
+          <MenuItem value="">Anyone</MenuItem>
+          <MenuItem value="none">
+            <Checkbox size="small" checked={assignees.includes('none')} tabIndex={-1} disableRipple sx={{ p: 0.5, mr: 1 }} />
+            <ListItemText>Not assigned</ListItemText>
+          </MenuItem>
+          {members.map((member) => (
+            <MenuItem key={member.id} value={member.id}>
+              <Checkbox size="small" checked={assignees.includes(member.id)} tabIndex={-1} disableRipple sx={{ p: 0.5, mr: 1 }} />
+              <ListItemText>{member.name}</ListItemText>
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label="Sprint"
+          value={sprintFilter}
+          onChange={(event) => {
+            const value = event.target.value as unknown as string[]
+            // "All sprints" clears the choice; otherwise the chosen sprints and "No sprint" add up.
+            setSprintFilter(value.includes('') ? [] : value)
+          }}
+          slotProps={{
+            select: {
+              multiple: true,
+              displayEmpty: true,
+              renderValue: (selected) => {
+                const chosen = selected as string[]
+                if (chosen.length === 0) return 'All sprints'
+                const names = chosen.map((id) => (id === 'none' ? 'No sprint' : (sprints.data?.find((sprint) => sprint.id === id)?.name ?? '')))
+                return names.length <= 2 ? names.join(', ') : `${names.length} selected`
+              },
+            },
+            inputLabel: { shrink: true },
+          }}
+          sx={{ minWidth: 170, maxWidth: 260, '& .MuiInputBase-root': { minHeight: 32, fontSize: '0.8125rem' } }}
+        >
+          <MenuItem value="">All sprints</MenuItem>
+          <MenuItem value="none">
+            <Checkbox size="small" checked={sprintFilter.includes('none')} tabIndex={-1} disableRipple sx={{ p: 0.5, mr: 1 }} />
+            <ListItemText>No sprint</ListItemText>
+          </MenuItem>
+          {(sprints.data ?? []).map((sprint) => (
+            <MenuItem key={sprint.id} value={sprint.id}>
+              <Checkbox size="small" checked={sprintFilter.includes(sprint.id)} tabIndex={-1} disableRipple sx={{ p: 0.5, mr: 1 }} />
+              <ListItemText>{sprint.name}</ListItemText>
             </MenuItem>
           ))}
         </TextField>

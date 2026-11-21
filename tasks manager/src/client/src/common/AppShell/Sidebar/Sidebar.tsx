@@ -20,19 +20,11 @@ import { NavGroup } from '@/common/AppShell/Sidebar/NavGroup/NavGroup'
 import { NavItem, type NavLinkEntry } from '@/common/AppShell/Sidebar/NavItem/NavItem'
 import { useNavState } from '@/common/AppShell/Sidebar/navStore'
 import { ProjectHeader } from '@/common/AppShell/Sidebar/ProjectHeader/ProjectHeader'
-import { SearchButton } from '@/common/AppShell/Sidebar/SearchButton/SearchButton'
 import { SprintCard } from '@/common/AppShell/Sidebar/SprintCard/SprintCard'
 import { UserMenu } from '@/common/AppShell/Sidebar/UserMenu/UserMenu'
 import { tokens } from '@/theme/tokens'
 
 type Entry = ({ kind: 'link' } & NavLinkEntry) | { kind: 'group'; id: string; label: string; icon: ReactNode; items: NavLinkEntry[] }
-
-/** A group's icon carries the only colour in the navigation: green for Boards, indigo for Analytics. */
-const tinted = (icon: ReactNode, color: string) => (
-  <Box component="span" sx={{ display: 'inline-flex', color }}>
-    {icon}
-  </Box>
-)
 
 /** What the navigation offers depends on whether a project is open. Labels name their contents. */
 function navigationFor(isManager: boolean, projectId: string | undefined): { main: Entry[]; settings?: NavLinkEntry } {
@@ -51,7 +43,7 @@ function navigationFor(isManager: boolean, projectId: string | undefined): { mai
         kind: 'group',
         id: 'boards',
         label: 'Boards',
-        icon: tinted(<ViewKanbanOutlined />, tokens.color.stDone),
+        icon: <ViewKanbanOutlined />,
         items: [
           { to: `${base}/work-items`, label: 'Work items', icon: <FormatListBulletedRounded /> },
           { to: `${base}/board`, label: 'Sprint board', icon: <ViewKanbanOutlined /> },
@@ -63,7 +55,7 @@ function navigationFor(isManager: boolean, projectId: string | undefined): { mai
         kind: 'group',
         id: 'analytics',
         label: 'Analytics',
-        icon: tinted(<InsightsOutlined />, tokens.color.stProgress),
+        icon: <InsightsOutlined />,
         items: [
           { to: `${base}/dashboard`, label: 'Dashboard', icon: <DashboardOutlined /> },
           { to: `${base}/reports`, label: 'Reports', icon: <BarChartOutlined /> },
@@ -122,7 +114,6 @@ export function Sidebar({ onNavigate, collapsible = true }: SidebarProps) {
       </Box>
 
       {projectId && <ProjectHeader projectId={projectId} collapsed={collapsed} onNavigate={onNavigate} />}
-      {projectId && <SearchButton projectId={projectId} collapsed={collapsed} onNavigate={onNavigate} />}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', pt: 1 }}>
         {main.map((entry) =>

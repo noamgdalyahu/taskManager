@@ -33,7 +33,7 @@ export function CommentThread({ taskId, comments, members }: CommentThreadProps)
       </Typography>
       {comments.length === 0 && (
         <Typography color="text.secondary" sx={{ py: 1.5 }}>
-          No comments yet.
+          No comments yet
         </Typography>
       )}
       {comments.map((comment) => (

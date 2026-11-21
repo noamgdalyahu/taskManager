@@ -1,13 +1,15 @@
 import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded'
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded'
 import EditOutlined from '@mui/icons-material/EditOutlined'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useProject } from '@/api/projects'
 import { useSprints } from '@/api/sprints'
 import { useProjectTasks, useTaskDetail } from '@/api/tasks'
 import { useAuth } from '@/auth/useAuth'
+import { DeleteTaskDialog } from '@/common/DeleteTaskDialog/DeleteTaskDialog'
 import { EditTaskDialog } from '@/common/EditTaskDialog/EditTaskDialog'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
 import { HairlineButton } from '@/common/HairlineButton/HairlineButton'
@@ -31,8 +33,10 @@ export function TaskDetail() {
   const tasks = useProjectTasks(projectId)
   const { members, byId } = useMemberDirectory(projectId)
   const [editing, setEditing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const navigate = useNavigate()
 
-  if (detail.isLoading) return <PageLoading />
+  if (detail.isLoading) return <PageLoading shape="detail" />
   if (detail.error) return <ErrorState error={detail.error} onRetry={() => detail.refetch()} />
   if (!detail.data) return null
 
@@ -55,13 +59,20 @@ export function TaskDetail() {
         subtitle={<StatusChip status={task.status} />}
         actions={
           isManager ? (
-            <HairlineButton onClick={() => setEditing(true)}>
-              <EditOutlined aria-hidden />
-              Edit
-            </HairlineButton>
+            <>
+              <HairlineButton onClick={() => setEditing(true)}>
+                <EditOutlined aria-hidden />
+                Edit
+              </HairlineButton>
+              <HairlineButton onClick={() => setDeleting(true)} sx={{ color: 'error.main', borderColor: 'error.main' }}>
+                <DeleteOutlineRounded aria-hidden />
+                Delete
+              </HairlineButton>
+            </>
           ) : undefined
         }
       />
+      {deleting && <DeleteTaskDialog task={task} onClose={() => setDeleting(false)} onDeleted={() => navigate(backTo, { replace: true })} />}
       {editing && <EditTaskDialog task={task} sprints={sprints.data ?? []} members={members} onClose={() => setEditing(false)} />}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2.5, alignItems: 'flex-start' }}>
         <Box sx={{ flex: '999 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
@@ -70,7 +81,7 @@ export function TaskDetail() {
               Description
             </Typography>
             <Typography color={task.description ? 'text.primary' : 'text.secondary'} sx={{ whiteSpace: 'pre-wrap' }}>
-              {task.description || 'No description.'}
+              {task.description || 'No description'}
             </Typography>
           </Surface>
           <CommentThread taskId={task.id} comments={comments} members={byId} />

@@ -15,7 +15,7 @@ export function ProjectOverview() {
   const sprints = useSprints(projectId)
   const tasks = useProjectTasks(projectId)
 
-  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading />
+  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading shape="cards" />
   const error = project.error ?? sprints.error ?? tasks.error
   if (error) return <ErrorState error={error} onRetry={() => { void project.refetch(); void sprints.refetch(); void tasks.refetch() }} />
 

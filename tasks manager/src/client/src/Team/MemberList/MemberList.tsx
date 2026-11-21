@@ -20,7 +20,7 @@ export function MemberList({ projectId, ownerId, currentUserId, members, stats }
         Members
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Capacity and workload for the current sprint. Pressing a member's board link shows only their tasks.
+        Assigned hours against capacity in the current sprint.
       </Typography>
       {members.map((member) => (
         <MemberRow key={member.id} member={member} stats={stats.get(member.id)} projectId={projectId} isOwner={member.id === ownerId} canRemove={isManager && member.id !== ownerId && member.id !== currentUserId} />

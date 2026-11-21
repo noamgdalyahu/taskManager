@@ -34,7 +34,7 @@ export function BurndownReport({ sprints }: { sprints: SprintDto[] }) {
           ))}
         </TextField>
       </ReportToolbar>
-      {dashboard.isLoading && <PageLoading />}
+      {dashboard.isLoading && <PageLoading shape="panel" />}
       {dashboard.error && <ErrorState error={dashboard.error} onRetry={() => void dashboard.refetch()} />}
       {data && <BurndownChart title={`${data.sprintName} burndown`} ideal={data.ideal} actual={data.actual} forecast={data.forecast} />}
     </>

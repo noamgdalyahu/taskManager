@@ -62,33 +62,27 @@ export const STATUS_LABEL: Record<TaskStatus, string> = {
 }
 
 /** The kinds of work, in the order they are offered. */
-export const TASK_TYPES = ['Epic', 'DesignTask', 'Documentation', 'TestingQa', 'Performance', 'Security', 'Infrastructure', 'Migration', 'Accessibility', 'Integration', 'Regression'] as const satisfies readonly TaskType[]
+export const TASK_TYPES = ['Bug', 'UserStory', 'Task', 'Epic', 'Feature', 'Issue', 'TestCase', 'Ticket'] as const satisfies readonly TaskType[]
 
 export const TASK_TYPE_LABEL: Record<TaskType, string> = {
+  Bug: 'Bug',
+  UserStory: 'User Story',
+  Task: 'Task',
   Epic: 'Epic',
-  DesignTask: 'Design Task',
-  Documentation: 'Documentation',
-  TestingQa: 'Testing / QA',
-  Performance: 'Performance',
-  Security: 'Security',
-  Infrastructure: 'Infrastructure / DevOps',
-  Migration: 'Migration',
-  Accessibility: 'Accessibility',
-  Integration: 'Integration',
-  Regression: 'Regression',
+  Feature: 'Feature',
+  Issue: 'Issue',
+  TestCase: 'Test Case',
+  Ticket: 'Ticket',
 }
 
 /** What each type is for, shown as help text where a type is chosen. */
 export const TASK_TYPE_PURPOSE: Record<TaskType, string> = {
-  Epic: 'Groups multiple related features and stories',
-  DesignTask: 'UI/UX design and prototyping',
-  Documentation: 'Write or update technical documentation',
-  TestingQa: 'Test functionality and find issues',
-  Performance: 'Improve speed and resource usage',
-  Security: 'Fix vulnerabilities or improve security',
-  Infrastructure: 'CI/CD, deployment, servers, Docker',
-  Migration: 'Move data, databases, or frameworks',
-  Accessibility: 'Improve usability for people with disabilities',
-  Integration: 'Connect external APIs or services',
-  Regression: 'Fix something that broke after a previous change',
+  Bug: 'Something is broken and needs fixing',
+  UserStory: 'A requirement describing something a user wants',
+  Task: 'A specific piece of work to complete',
+  Epic: 'A large initiative containing multiple work items',
+  Feature: 'A new capability or functionality',
+  Issue: 'A problem, concern, or item requiring investigation',
+  TestCase: 'A defined scenario to verify functionality',
+  Ticket: 'A general work request or support item',
 }

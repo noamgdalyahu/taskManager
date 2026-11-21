@@ -34,7 +34,7 @@ export function Reports() {
   const tasks = useProjectTasks(projectId)
   const [range, setRange] = useState<[string, string] | null>(null)
 
-  if (project.isLoading || reports.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading />
+  if (project.isLoading || reports.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading shape="detail" />
   const error = project.error ?? reports.error ?? sprints.error ?? tasks.error
   if (error) return <ErrorState error={error} onRetry={() => void reports.refetch()} />
   if (!reports.data) return null

@@ -55,7 +55,7 @@ export function FlowReport({ tasks }: { tasks: TaskDto[] }) {
       </ReportToolbar>
       <Surface component="section" aria-label="Cumulative flow">
         {tasks.length === 0 ? (
-          <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>The project has no tasks yet.</Box>
+          <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>The project has no tasks yet</Box>
         ) : (
           <>
             <Box sx={{ display: 'flex', gap: 2, fontSize: '0.75rem', color: tokens.color.muted }}>

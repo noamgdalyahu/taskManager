@@ -149,7 +149,9 @@ function makeTheme(mode: 'light' | 'dark') {
     MuiMenuItem: { styleOverrides: { root: { minHeight: 34, borderRadius: tokens.radius.control, marginInline: 4, fontSize: '0.8125rem' } } },
     MuiAlert: { styleOverrides: { root: { borderRadius: tokens.radius.task, alignItems: 'center' } } },
     MuiTooltip: { styleOverrides: { tooltip: { fontSize: '0.75rem', borderRadius: tokens.radius.control, backgroundColor: c.ink, color: c.onInk } } },
-    MuiTab: { styleOverrides: { root: { minHeight: 40, textTransform: 'none', fontWeight: 600 } } },
+    // Tabs follow the board's own: the selected one is in the text colour with a 2px underline in the same colour, never the accent.
+    MuiTabs: { styleOverrides: { indicator: { backgroundColor: c.text, height: 2 } } },
+    MuiTab: { styleOverrides: { root: { minHeight: 40, textTransform: 'none', fontWeight: 500, color: c.muted, '&.Mui-selected': { color: c.text } } } },
   },
   })
 }

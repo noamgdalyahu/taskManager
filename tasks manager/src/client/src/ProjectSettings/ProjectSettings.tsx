@@ -22,14 +22,14 @@ export function ProjectSettings() {
   const tasks = useProjectTasks(projectId)
   const team = useTeam(projectId)
 
-  if (project.isLoading || sprints.isLoading || tasks.isLoading || team.isLoading) return <PageLoading />
+  if (project.isLoading || sprints.isLoading || tasks.isLoading || team.isLoading) return <PageLoading shape="detail" />
   const error = project.error ?? sprints.error ?? tasks.error ?? team.error
   if (error) return <ErrorState error={error} />
   if (!project.data) return null
 
   return (
     <>
-      <PageHeader eyebrow={project.data.name} title="Project settings" subtitle={isManager ? undefined : 'You can read these settings; a manager can change them.'} />
+      <PageHeader eyebrow={project.data.name} title="Project settings" subtitle={isManager ? undefined : 'You can read these settings; a manager can change them'} />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 860 }}>
         {/* Keyed by project: switching project starts every form from that project's values. */}
         <GeneralSettings key={project.data.id} project={project.data} canEdit={isManager} />

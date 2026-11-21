@@ -30,7 +30,7 @@ export function MemberRow({ member, stats, projectId, isOwner, canRemove }: Memb
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', py: 1.75, borderBottom: 1, borderColor: 'divider' }}>
       <MemberAvatar id={member.id} name={member.name} size={36} />
-      <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
+      <Box sx={{ flex: '2 1 240px', minWidth: 0 }}>
         <Typography sx={{ fontWeight: 600 }}>
           {member.name}{' '}
           <Typography component="span" variant="body2" color="text.secondary">
@@ -41,7 +41,7 @@ export function MemberRow({ member, stats, projectId, isOwner, canRemove }: Memb
           {member.email}
         </Typography>
       </Box>
-      <Box sx={{ flex: '2 1 240px', minWidth: 0 }}>
+      <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
         {stats && (
           <Typography variant="body2" sx={{ fontVariantNumeric: 'tabular-nums' }}>
             <strong>{stats.tasks}</strong> {stats.tasks === 1 ? 'task' : 'tasks'} · <strong>{Math.round(stats.hours * 10) / 10} h</strong> assigned of {Math.round(stats.capacity * 10) / 10} h

@@ -19,7 +19,7 @@ export function MyTasks() {
   const sprint = useSprint(sprintId)
   const board = useBoard(sprintId)
 
-  if (tasks.isLoading) return <PageLoading />
+  if (tasks.isLoading) return <PageLoading shape="detail" />
   if (tasks.error) return <ErrorState error={tasks.error} onRetry={() => tasks.refetch()} />
 
   // The sprint panel is computed from the board: everything assigned to me in this sprint, finished or not.

@@ -6,7 +6,8 @@ import Typography from '@mui/material/Typography'
 import type { ReactNode } from 'react'
 import { STATUS_LABEL, TASK_STATUSES, type TaskDto, type TaskStatus, type TeamMemberDto } from '@/api/types'
 import { GRID_COLUMNS, StoryLane } from '@/Board/BoardGrid/StoryLane/StoryLane'
-import { sumHours, type Lane } from '@/Board/boardLanes'
+import { GroupByButton } from '@/Board/BoardGrid/GroupByButton/GroupByButton'
+import { sumHours, type Lane, type LaneGrouping } from '@/Board/boardLanes'
 import { HairlineButton } from '@/common/HairlineButton/HairlineButton'
 import { Kbd } from '@/common/Kbd/Kbd'
 import { formatHours } from '@/lib/format'
@@ -29,11 +30,14 @@ interface BoardGridProps {
   collapsed: Set<string>
   onToggleLane: (key: string) => void
   onToggleAll: () => void
+  /** How the lanes are formed. */
+  grouping: LaneGrouping
+  onGrouping: (grouping: LaneGrouping) => void
   fullscreen: boolean
   onToggleFullscreen: () => void
-  onAddTask: () => void
   /** Extra toolbar buttons, for example the manager's board settings. */
   toolbarExtra?: ReactNode
+  onAddTask: () => void
   members: Map<string, TeamMemberDto>
   memberList: TeamMemberDto[]
   criticalIds: Set<string>
@@ -43,7 +47,7 @@ interface BoardGridProps {
 }
 
 /** The board panel: toolbar, state column headers, one swimlane per group, and the quick-add button at the bottom. Scrolls sideways below 820px. */
-export function BoardGrid({ lanes, visible, limits, totals, collapsed, onToggleLane, onToggleAll, fullscreen, onToggleFullscreen, onAddTask, toolbarExtra, members, memberList, criticalIds, projectId, onMove, onAssign }: BoardGridProps) {
+export function BoardGrid({ lanes, visible, limits, totals, collapsed, onToggleLane, onToggleAll, grouping, onGrouping, fullscreen, onToggleFullscreen, onAddTask, toolbarExtra, members, memberList, criticalIds, projectId, onMove, onAssign }: BoardGridProps) {
   const allCollapsed = lanes.length > 0 && lanes.every((lane) => collapsed.has(lane.key))
   return (
     <Box
@@ -59,14 +63,18 @@ export function BoardGrid({ lanes, visible, limits, totals, collapsed, onToggleL
         ...(fullscreen && { position: 'fixed', inset: 0, zIndex: 1300, borderRadius: 0, overflowY: 'auto', bgcolor: tokens.color.canvas }),
       }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1, p: 1, pb: 0 }}>
-        {toolbarExtra}
-        <HairlineButton onClick={onToggleAll} disabled={lanes.length === 0}>
-          {allCollapsed ? 'Expand all' : 'Collapse all'}
-        </HairlineButton>
-        <HairlineButton onClick={onToggleFullscreen} aria-label={fullscreen ? 'Exit full screen' : 'Expand the board to full screen'} title={fullscreen ? 'Exit full screen (Esc)' : 'Full screen'} sx={{ width: 32, px: 0 }}>
-          {fullscreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
-        </HairlineButton>
+      {/* Above the board: the settings on the left, and every option for how the board is shown on the right. */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 1, p: 1, pb: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{toolbarExtra}</Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
+          <GroupByButton grouping={grouping} onGrouping={onGrouping} />
+          <HairlineButton onClick={onToggleAll} disabled={lanes.length === 0}>
+            {allCollapsed ? 'Expand all' : 'Collapse all'}
+          </HairlineButton>
+          <HairlineButton onClick={onToggleFullscreen} aria-label={fullscreen ? 'Exit full screen' : 'Expand the board to full screen'} title={fullscreen ? 'Exit full screen (Esc)' : 'Full screen'} sx={{ width: 32, px: 0 }}>
+            {fullscreen ? <FullscreenExitRounded aria-hidden /> : <FullscreenRounded aria-hidden />}
+          </HairlineButton>
+        </Box>
       </Box>
 
       <Box sx={{ overflowX: 'auto', p: 1 }}>

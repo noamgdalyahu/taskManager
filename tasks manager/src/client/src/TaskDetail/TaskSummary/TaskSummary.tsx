@@ -22,7 +22,7 @@ interface TaskSummaryProps {
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Typography variant="overline" color="text.secondary">
+      <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 500, color: 'text.secondary' }}>
         {label}
       </Typography>
       {children}

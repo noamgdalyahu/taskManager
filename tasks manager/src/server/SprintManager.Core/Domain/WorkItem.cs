@@ -16,28 +16,22 @@ public enum WorkItemStatus
 /// <summary>What kind of work a task is. A task without a type (older data) is shown as untyped.</summary>
 public enum TaskType
 {
-    /// <summary>Groups multiple related features and stories.</summary>
+    /// <summary>Something is broken and needs fixing.</summary>
+    Bug,
+    /// <summary>A requirement describing something a user wants.</summary>
+    UserStory,
+    /// <summary>A specific piece of work to complete.</summary>
+    Task,
+    /// <summary>A large initiative containing multiple work items.</summary>
     Epic,
-    /// <summary>UI/UX design and prototyping.</summary>
-    DesignTask,
-    /// <summary>Write or update technical documentation.</summary>
-    Documentation,
-    /// <summary>Test functionality and find issues.</summary>
-    TestingQa,
-    /// <summary>Improve speed and resource usage.</summary>
-    Performance,
-    /// <summary>Fix vulnerabilities or improve security.</summary>
-    Security,
-    /// <summary>CI/CD, deployment, servers, Docker.</summary>
-    Infrastructure,
-    /// <summary>Move data, databases, or frameworks.</summary>
-    Migration,
-    /// <summary>Improve usability for people with disabilities.</summary>
-    Accessibility,
-    /// <summary>Connect external APIs or services.</summary>
-    Integration,
-    /// <summary>Fix something that broke after a previous change.</summary>
-    Regression,
+    /// <summary>A new capability or functionality.</summary>
+    Feature,
+    /// <summary>A problem, concern, or item requiring investigation.</summary>
+    Issue,
+    /// <summary>A defined scenario to verify functionality.</summary>
+    TestCase,
+    /// <summary>A general work request or support item.</summary>
+    Ticket,
 }
 
 /// <summary>

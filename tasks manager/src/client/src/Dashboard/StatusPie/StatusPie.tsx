@@ -62,7 +62,7 @@ export function StatusPie({ counts }: StatusPieProps) {
         Tasks by status
       </Typography>
       {total === 0 ? (
-        <Typography color="text.secondary">There are no tasks in this sprint yet.</Typography>
+        <Typography color="text.secondary">There are no tasks in this sprint yet</Typography>
       ) : (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
           <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE} role="img" aria-label={summary} style={{ flex: '0 0 auto' }}>

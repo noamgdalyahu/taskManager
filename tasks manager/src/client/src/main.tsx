@@ -14,6 +14,9 @@ initAppearance()
 // Wire the HTTP layer to the session before React renders anything, so the very first request already carries the token.
 configureHttp({
   getToken: () => getSession()?.token ?? null,
+  getExpiresAt: () => getSession()?.expiresAt ?? null,
+  // A renewed token replaces the old one; the person stays as they were.
+  onRenewed: (response) => setSession({ token: response.accessToken, expiresAt: response.expiresAt, user: response.user }),
   onUnauthorized: () => setSession(null),
 })
 

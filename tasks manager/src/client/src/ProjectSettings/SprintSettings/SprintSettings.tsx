@@ -44,7 +44,7 @@ function SprintRow({ sprint, projectId, canEdit }: { sprint: SprintDto; projectI
 export function SprintSettings({ sprints, projectId, canEdit }: { sprints: SprintDto[]; projectId: string; canEdit: boolean }) {
   return (
     <SettingsSection id="sprints" title="Sprints" description="Dates and names. Capacity is the team's weekly hours spread over the sprint's working days, so it changes with the dates and with who is on the team.">
-      {sprints.length === 0 ? <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No sprints yet.</Box> : sprints.map((sprint) => <SprintRow key={sprint.id} sprint={sprint} projectId={projectId} canEdit={canEdit} />)}
+      {sprints.length === 0 ? <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No sprints yet</Box> : sprints.map((sprint) => <SprintRow key={sprint.id} sprint={sprint} projectId={projectId} canEdit={canEdit} />)}
     </SettingsSection>
   )
 }

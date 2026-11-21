@@ -67,9 +67,9 @@ export function SprintTargets({ sprints, canDrop }: SprintTargetsProps) {
       ))}
       <Target id={NO_SPRINT} enabled={canDrop}>
         <Box sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>Backlog</Box>
-        <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>Drop here to take a work item out of its sprint.</Box>
+        <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>Drop here to take a work item out of its sprint</Box>
       </Target>
-      {!canDrop && <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>Only managers can move work items between sprints.</Box>}
+      {!canDrop && <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>Only managers can move work items between sprints</Box>}
     </Box>
   )
 }

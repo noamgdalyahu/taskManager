@@ -20,7 +20,7 @@ export function TimeLogList({ logs, members, loggedHours, estimateHours }: TimeL
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         {formatHours(loggedHours)} of {formatHours(estimateHours)} estimated
       </Typography>
-      {logs.length === 0 && <Typography color="text.secondary">Nobody has logged time yet.</Typography>}
+      {logs.length === 0 && <Typography color="text.secondary">Nobody has logged time yet</Typography>}
       {logs.map((log) => (
         <Box key={log.id} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, py: 1, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body2">

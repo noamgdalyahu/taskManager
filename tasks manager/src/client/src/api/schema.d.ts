@@ -301,7 +301,26 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1679,12 +1698,12 @@ export interface components {
             blockingShare: number;
         };
         /** @enum {unknown|null} */
-        NullableOfTaskType: "Epic" | "DesignTask" | "Documentation" | "TestingQa" | "Performance" | "Security" | "Infrastructure" | "Migration" | "Accessibility" | "Integration" | "Regression" | null;
+        NullableOfTaskType: "Bug" | "UserStory" | "Task" | "Epic" | "Feature" | "Issue" | "TestCase" | "Ticket" | null;
         /**
          * @default null
          * @enum {unknown|null}
          */
-        NullableOfTaskType2: "Epic" | "DesignTask" | "Documentation" | "TestingQa" | "Performance" | "Security" | "Infrastructure" | "Migration" | "Accessibility" | "Integration" | "Regression" | null;
+        NullableOfTaskType2: "Bug" | "UserStory" | "Task" | "Epic" | "Feature" | "Issue" | "TestCase" | "Ticket" | null;
         PlanComparisonDto: {
             isComparable: boolean;
             message: string | null;

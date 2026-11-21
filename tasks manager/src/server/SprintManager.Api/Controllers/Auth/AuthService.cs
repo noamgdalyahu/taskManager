@@ -71,6 +71,16 @@ public sealed class AuthService(IUserRepository users, IPasswordHasher hasher, J
         return ok ? AuthResult.Success(Issue(user!)) : AuthResult.Failed(AuthErrorCode.InvalidCredentials);
     }
 
+    /// <summary>
+    /// Issues a fresh token for someone who is already signed in, so a session that is in use does not end at the token's
+    /// expiry. The user is read again, so a person who has been removed gets no new token.
+    /// </summary>
+    public async Task<AuthResult> RefreshAsync(CurrentUser caller, CancellationToken cancellationToken)
+    {
+        var user = await users.GetAsync(caller.Id, cancellationToken);
+        return user is null ? AuthResult.Failed(AuthErrorCode.InvalidCredentials) : AuthResult.Success(Issue(user));
+    }
+
     /// <summary>Loads the caller's profile.</summary>
     public Task<User?> GetAsync(CurrentUser caller, CancellationToken cancellationToken) =>
         users.GetAsync(caller.Id, cancellationToken);

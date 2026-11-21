@@ -8,9 +8,11 @@ import { NextSprint } from '@/Board/SidePanel/NextSprint/NextSprint'
 import { TeamCapacity } from '@/Board/SidePanel/TeamCapacity/TeamCapacity'
 import { TypesSection } from '@/Board/SidePanel/TypesSection/TypesSection'
 import { UNASSIGNED, type BoardFilter } from '@/Board/useBoardFilter'
-import { BOARD_SEARCH_ID } from '@/common/AppShell/Sidebar/SearchButton/SearchButton'
 import { Kbd } from '@/common/Kbd/Kbd'
 import { tokens } from '@/theme/tokens'
+
+/** The id of the sprint board's search box; "/" focuses it. */
+const BOARD_SEARCH_ID = 'board-search'
 
 interface SidePanelProps {
   projectId: string

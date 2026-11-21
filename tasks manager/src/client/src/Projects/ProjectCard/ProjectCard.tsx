@@ -34,7 +34,7 @@ export function ProjectCard({ project, to }: { project: ProjectDto; to: string }
           {project.isArchived && <Chip size="small" label="Archived" />}
         </Box>
         <Typography color="text.secondary" sx={{ flex: 1, minHeight: 40 }}>
-          {project.description || 'No description yet.'}
+          {project.description || 'No description yet'}
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'text.secondary' }}>
           <Typography variant="body2">

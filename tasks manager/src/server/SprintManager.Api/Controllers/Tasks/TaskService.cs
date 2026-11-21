@@ -146,6 +146,30 @@ public sealed class TaskService(
         return await SaveAsync(before, before with { AssigneeId = assignee, UpdatedAt = clock.UtcNow }, caller, projectTasks, ct);
     }
 
+    /// <summary>
+    /// Deletes a task (managers). Tasks that waited for it stop waiting (it is removed from their dependencies), and its
+    /// comments, time logs and history go with it. A deleted task does not count in sprint totals or reports any more.
+    /// </summary>
+    public async Task<OperationResult<bool>> DeleteAsync(TaskId id, CurrentUser caller, CancellationToken ct)
+    {
+        var loaded = await taskAccess.AsManagerAsync(id, caller, ct);
+        if (!loaded.IsSuccess)
+            return OperationResult<bool>.Fail(loaded.Error!.Value);
+
+        var now = clock.UtcNow;
+        var dependants = (await tasks.GetForProjectAsync(loaded.Value!.ProjectId, ct))
+            .Where(t => t.DependsOn.Contains(id))
+            .Select(t => t with { DependsOn = t.DependsOn.Where(d => d != id).ToList(), UpdatedAt = now })
+            .ToList();
+        await tasks.UpdateManyAsync(dependants, ct);
+
+        await comments.DeleteForTaskAsync(id, ct);
+        await timeLogs.DeleteForTaskAsync(id, ct);
+        await history.DeleteForTaskAsync(id, ct);
+        await tasks.DeleteAsync(id, ct);
+        return OperationResult<bool>.Ok(true);
+    }
+
     // ---- helpers -------------------------------------------------------------
 
     private async Task<OperationResult<TaskView>> SaveAsync(TaskItem before, TaskItem after, CurrentUser caller, IReadOnlyList<TaskItem> projectTasks, CancellationToken ct)

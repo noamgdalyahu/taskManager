@@ -38,14 +38,14 @@ export function Projects() {
 
   return (
     <>
-      <PageHeader title="Projects" subtitle="Every project you belong to." actions={actions} />
+      <PageHeader title="Projects" subtitle="Every project you belong to" actions={actions} />
 
-      {projects.isLoading && <PageLoading />}
+      {projects.isLoading && <PageLoading shape="cards" header={false} />}
       {projects.error && <ErrorState error={projects.error} onRetry={() => projects.refetch()} />}
       {projects.data?.length === 0 && (
         <EmptyState
           title="No projects yet"
-          description={isManager ? 'Create the first project, then invite your team with a code.' : 'Ask your manager for an invitation code and join their project.'}
+          description={isManager ? 'Create the first project, then invite your team with a code' : 'Ask your manager for an invitation code and join their project'}
           action={
             isManager ? (
               <Button variant="contained" startIcon={<AddRounded />} onClick={() => setCreating(true)}>

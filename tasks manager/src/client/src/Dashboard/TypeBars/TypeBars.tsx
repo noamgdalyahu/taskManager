@@ -21,7 +21,7 @@ export function TypeBars({ tasks }: { tasks: TaskDto[] }) {
         Tasks by type
       </Box>
       {shown.length === 0 ? (
-        <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No tasks in this sprint yet.</Box>
+        <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No tasks in this sprint yet</Box>
       ) : (
         <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
           {shown.map((row) => (

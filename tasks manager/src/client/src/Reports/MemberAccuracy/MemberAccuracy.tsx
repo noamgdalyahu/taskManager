@@ -15,7 +15,7 @@ export function MemberAccuracy({ members }: { members: MemberReportDto[] }) {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.75 }}>
         Across all finished tasks. Use it to calibrate future estimates, not to rank people.
       </Typography>
-      {members.length === 0 && <Typography color="text.secondary">Nobody has finished a task with logged time yet.</Typography>}
+      {members.length === 0 && <Typography color="text.secondary">Nobody has finished a task with logged time yet</Typography>}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {members.map((member) => (
           <Box key={member.memberId} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>

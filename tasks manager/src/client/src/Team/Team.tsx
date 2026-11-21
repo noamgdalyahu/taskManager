@@ -20,7 +20,7 @@ export function Team() {
   const tasks = useProjectTasks(projectId)
   const { sprint } = useSprintSelection(projectId, undefined)
 
-  if (project.isLoading || team.isLoading || tasks.isLoading) return <PageLoading />
+  if (project.isLoading || team.isLoading || tasks.isLoading) return <PageLoading shape="detail" />
   const error = project.error ?? team.error ?? tasks.error
   if (error) return <ErrorState error={error} />
   if (!project.data || !team.data) return null

@@ -53,7 +53,7 @@ export function SprintCapacity({ sprints, current, tasks, members, canStart, sta
             )}
           </Box>
         ))}
-        {open.length === 0 && <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No open sprints.</Box>}
+        {open.length === 0 && <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No open sprints</Box>}
       </Box>
 
       <Box>

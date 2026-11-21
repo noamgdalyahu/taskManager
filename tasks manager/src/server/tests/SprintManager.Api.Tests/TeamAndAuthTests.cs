@@ -154,6 +154,30 @@ public class TeamAndAuthTests
     }
 
     [Fact]
+    public async Task Refresh_GivesTheSamePersonANewTokenThatLastsLonger()
+    {
+        var auth = Auth();
+        var first = await auth.LoginAsync(new LoginRequest("MIA@t.com", "Passw0rd!"), Ct);
+
+        w.Clock.Advance(TimeSpan.FromMinutes(45));
+        var refreshed = await auth.RefreshAsync(new CurrentUser(w.Mia.Id, UserRole.Manager), Ct);
+
+        Assert.True(refreshed.IsSuccess);
+        Assert.Equal(first.Response!.User.Id, refreshed.Response!.User.Id);
+        Assert.True(refreshed.Response.ExpiresAt > first.Response.ExpiresAt);
+        Assert.NotEqual(first.Response.AccessToken, refreshed.Response.AccessToken);
+    }
+
+    [Fact]
+    public async Task Refresh_ForSomeoneWhoNoLongerExists_IsRefused()
+    {
+        var result = await Auth().RefreshAsync(new CurrentUser(MemberId.New(), UserRole.Member), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(AuthErrorCode.InvalidCredentials, result.Error);
+    }
+
+    [Fact]
     public void RealHasher_RoundTrips_UsesFreshSalt_RejectsTampering()
     {
         var hasher = new Pbkdf2PasswordHasher();

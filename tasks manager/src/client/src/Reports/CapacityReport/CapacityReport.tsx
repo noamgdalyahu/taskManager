@@ -24,12 +24,12 @@ export function CapacityReport({ sprints, range, onRange }: CapacityReportProps)
 
   return (
     <>
-      <ReportToolbar title="Capacity utilization" description="Planned hours against what the team can do, sprint by sprint." onExport={exportCsv} canExport={shown.length > 0}>
+      <ReportToolbar title="Capacity utilization" description="Planned hours against what the team can do, sprint by sprint" onExport={exportCsv} canExport={shown.length > 0}>
         <SprintRange sprints={sprints} range={range} onRange={onRange} />
       </ReportToolbar>
       <Surface>
         {shown.length === 0 ? (
-          <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No sprints in this range.</Box>
+          <Box sx={{ color: tokens.color.faint, fontSize: '0.8125rem' }}>No sprints in this range</Box>
         ) : (
           <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {shown.map((sprint) => (

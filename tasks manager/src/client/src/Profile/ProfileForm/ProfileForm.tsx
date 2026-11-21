@@ -41,7 +41,7 @@ export function ProfileForm() {
         {update.error && <Alert severity="error">{messageOf(update.error)}</Alert>}
         {saved && <Alert severity="success">Saved. Your next plan uses these skills and hours.</Alert>}
         <TextField label="Full name" required value={name} onChange={(event) => setName(event.target.value)} />
-        <TextField label="Email" value={user.email} disabled helperText="Your email is your login and cannot be changed here." />
+        <TextField label="Email" value={user.email} disabled helperText="Your email is your login and cannot be changed here" />
         <TextField
           label="Weekly capacity (hours)"
           type="number"

@@ -6,7 +6,7 @@ export function NotFound() {
   return (
     <EmptyState
       title="This page doesn't exist"
-      description="The link may be old, or you may not have access to it."
+      description="The link may be old, or you may not have access to it"
       action={
         <Button component={Link} to="/" variant="contained">
           Go to my start page

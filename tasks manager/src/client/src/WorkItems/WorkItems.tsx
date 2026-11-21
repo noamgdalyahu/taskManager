@@ -1,6 +1,8 @@
 import AddRounded from '@mui/icons-material/AddRounded'
+import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded'
 import ViewColumnOutlined from '@mui/icons-material/ViewColumnOutlined'
 import Box from '@mui/material/Box'
+import ButtonBase from '@mui/material/ButtonBase'
 import Checkbox from '@mui/material/Checkbox'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
@@ -20,6 +22,7 @@ import { useSprints } from '@/api/sprints'
 import { useProjectTasks } from '@/api/tasks'
 import { STATUS_LABEL, TASK_STATUSES, TASK_TYPES, TASK_TYPE_LABEL, type TaskDto } from '@/api/types'
 import { useAuth } from '@/auth/useAuth'
+import { DeleteTaskDialog } from '@/common/DeleteTaskDialog/DeleteTaskDialog'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
 import { HairlineButton } from '@/common/HairlineButton/HairlineButton'
 import { MemberAvatar } from '@/common/MemberAvatar/MemberAvatar'
@@ -67,6 +70,7 @@ export function WorkItems() {
   const [shown, setShown] = useState<Set<ColumnKey>>(() => new Set(COLUMNS.map((column) => column.key)))
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null)
   const [creating, setCreating] = useState(false)
+  const [deleting, setDeleting] = useState<TaskDto | null>(null)
 
   const sprintName = useMemo(() => new Map((sprints.data ?? []).map((candidate) => [candidate.id, candidate.name])), [sprints.data])
 
@@ -103,7 +107,7 @@ export function WorkItems() {
       })
   }, [tasks.data, search, state, assignee, type, sprint, sort, byId, sprintName])
 
-  if (project.isLoading || tasks.isLoading || sprints.isLoading) return <PageLoading />
+  if (project.isLoading || tasks.isLoading || sprints.isLoading) return <PageLoading shape="list" />
   const error = project.error ?? tasks.error ?? sprints.error
   if (error) return <ErrorState error={error} onRetry={() => void tasks.refetch()} />
 
@@ -199,13 +203,14 @@ export function WorkItems() {
                   </TableSortLabel>
                 </TableCell>
               ))}
+              {isManager && <TableCell sx={{ width: 40 }}><Box component="span" sx={{ position: 'absolute', left: -9999 }}>Actions</Box></TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={visibleColumns.length} sx={{ py: 5, textAlign: 'center', color: tokens.color.faint }}>
-                  {total === 0 ? 'This project has no work items yet.' : 'No work items match these filters.'}
+                <TableCell colSpan={visibleColumns.length + (isManager ? 1 : 0)} sx={{ py: 5, textAlign: 'center', color: tokens.color.faint }}>
+                  {total === 0 ? 'This project has no work items yet' : 'No work items match these filters'}
                 </TableCell>
               </TableRow>
             )}
@@ -248,6 +253,20 @@ export function WorkItems() {
                       {cells[column.key]}
                     </TableCell>
                   ))}
+                  {isManager && (
+                    <TableCell align="right" sx={{ py: 0 }}>
+                      <ButtonBase
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setDeleting(task)
+                        }}
+                        aria-label={`Delete ${task.title}`}
+                        sx={{ width: 28, height: 28, borderRadius: `${tokens.radius.control}px`, color: tokens.color.faint, '&:hover': { bgcolor: tokens.color.wash, color: tokens.color.danger } }}
+                      >
+                        <DeleteOutlineRounded aria-hidden sx={{ fontSize: 16 }} />
+                      </ButtonBase>
+                    </TableCell>
+                  )}
                 </TableRow>
               )
             })}
@@ -255,6 +274,7 @@ export function WorkItems() {
         </Table>
       </TableContainer>
 
+      {deleting && <DeleteTaskDialog task={deleting} onClose={() => setDeleting(null)} />}
       {creating && <NewTaskDialog projectId={projectId} sprints={sprints.data ?? []} tasks={tasks.data ?? []} onClose={() => setCreating(false)} />}
     </>
   )

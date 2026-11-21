@@ -28,7 +28,7 @@ export function GeneralSettings({ project, canEdit }: { project: ProjectDto; can
       <Box component="form" onSubmit={submit}>
         <Stack spacing={2} sx={{ maxWidth: 560 }}>
           {update.error && <Alert severity="error">{messageOf(update.error)}</Alert>}
-          {saved && !changed && <Alert severity="success">Saved.</Alert>}
+          {saved && !changed && <Alert severity="success">Saved</Alert>}
           <TextField label="Project name" required value={name} disabled={!canEdit} onChange={(event) => { setName(event.target.value); setSaved(false) }} slotProps={{ htmlInput: { maxLength: 100 } }} />
           <TextField label="Description" multiline minRows={3} value={description} disabled={!canEdit} onChange={(event) => { setDescription(event.target.value); setSaved(false) }} />
           {canEdit && (

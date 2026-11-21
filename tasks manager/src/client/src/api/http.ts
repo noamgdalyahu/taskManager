@@ -1,4 +1,5 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
+import type { AuthResponse } from './types'
 
 /**
  * The single place that talks HTTP, built on axios. Interceptors add the bearer token to every request, turn RFC 7807
@@ -7,12 +8,47 @@ import axios, { AxiosError, type AxiosRequestConfig } from 'axios'
  */
 
 let readToken: () => string | null = () => null
+let readExpiry: () => string | null = () => null
+let storeRefreshed: (response: AuthResponse) => void = () => {}
 let handleUnauthorized: () => void = () => {}
 
+/** A token lasts two hours; it is renewed once less than this is left, so a session that is in use never reaches its end. */
+const RENEW_WHEN_LESS_THAN_MS = 60 * 60_000
+let renewing: Promise<void> | null = null
+
+/**
+ * Asks the server for a new token when the current one is past half its life. One request at a time, shared by everyone
+ * waiting for it. A failure is ignored here: if the token really is dead, the next request gets a 401 and signs out.
+ * Uses plain axios, not the configured client, so it cannot trigger itself.
+ */
+export function renewSessionIfNeeded(): Promise<void> {
+  const token = readToken()
+  const expiresAt = readExpiry()
+  if (!token || !expiresAt) return Promise.resolve()
+  const left = Date.parse(expiresAt) - Date.now()
+  if (left > RENEW_WHEN_LESS_THAN_MS || left <= 0) return Promise.resolve()
+  renewing ??= axios
+    .post<AuthResponse>('/api/auth/refresh', null, { headers: { Authorization: `Bearer ${token}` } })
+    .then((response) => storeRefreshed(response.data))
+    .catch(() => undefined)
+    .finally(() => {
+      renewing = null
+    })
+  return renewing
+}
+
 /** Wired once at startup; keeps this module free of React. */
-export function configureHttp(options: { getToken: () => string | null; onUnauthorized: () => void }): void {
+export function configureHttp(options: { getToken: () => string | null; getExpiresAt: () => string | null; onRenewed: (response: AuthResponse) => void; onUnauthorized: () => void }): void {
   readToken = options.getToken
+  readExpiry = options.getExpiresAt
+  storeRefreshed = options.onRenewed
   handleUnauthorized = options.onUnauthorized
+
+  // An idle tab makes no requests, so check on a timer, and again when the tab comes back (a laptop waking up).
+  window.setInterval(() => void renewSessionIfNeeded(), 5 * 60_000)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void renewSessionIfNeeded()
+  })
 }
 
 interface ProblemBody {
@@ -38,7 +74,8 @@ const client = axios.create({
   headers: { Accept: 'application/json' },
 })
 
-client.interceptors.request.use((config) => {
+client.interceptors.request.use(async (config) => {
+  await renewSessionIfNeeded()
   const token = readToken()
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   return config

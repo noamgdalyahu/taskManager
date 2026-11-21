@@ -53,6 +53,23 @@ if (arguments.Contains("--fill-project"))
     return;
 }
 
+if (arguments.Contains("--migrate-types"))
+{
+    // Converts tasks stored with the earlier list of eleven types to the current eight. Safe to run twice.
+    var renames = new Dictionary<string, string>
+    {
+        ["DesignTask"] = "UserStory", ["Documentation"] = "Ticket", ["TestingQa"] = "TestCase", ["Performance"] = "Task",
+        ["Security"] = "Issue", ["Infrastructure"] = "Task", ["Migration"] = "Task", ["Accessibility"] = "Feature",
+        ["Integration"] = "Feature", ["Regression"] = "Bug",
+    };
+    foreach (var (from, to) in renames)
+    {
+        var result = await context.Tasks.UpdateManyAsync(Builders<TaskDocument>.Filter.Eq(t => t.Type, from), Builders<TaskDocument>.Update.Set(t => t.Type, to));
+        Console.WriteLine($"{from,-15} -> {to,-10} {result.ModifiedCount} tasks");
+    }
+    return;
+}
+
 if (arguments.Contains("--list-accounts"))
 {
     // Read-only: who exists, and which projects each account can see.
@@ -415,33 +432,33 @@ async Task SeedTaskManagerProjectAsync(string ownerEmail)
     var plan = new List<TaskItem>
     {
         Make("epic", TaskType.Epic, "Task Manager v1 release", 4, WorkItemStatus.InProgress, "Noa"),
-        Make("schema", TaskType.Migration, "Migrate task storage to the new schema", 8, WorkItemStatus.Done, "Omer", doneDay: 0),
-        Make("mockups", TaskType.DesignTask, "Design the sprint board mockups", 8, WorkItemStatus.Done, "Tamar", doneDay: 1),
-        Make("ci", TaskType.Infrastructure, "CI pipeline with build and test stages", 6, WorkItemStatus.Done, "Gal", doneDay: 1),
-        Make("testplan", TaskType.TestingQa, "Test plan for the sprint board", 6, WorkItemStatus.Done, "Shira", doneDay: 2),
-        Make("jwt", TaskType.Security, "Harden JWT login and role checks", 10, WorkItemStatus.Done, "Lior", ["schema"], doneDay: 2),
-        Make("boardui", TaskType.Integration, "Connect the board UI to the sprint API", 12, WorkItemStatus.InProgress, "Tamar", ["mockups"]),
-        Make("docker", TaskType.Infrastructure, "Dockerize the API and the client", 6, WorkItemStatus.InProgress, "Gal", ["ci"]),
-        Make("jumpback", TaskType.Regression, "Fix: a moved card jumps back after refresh", 4, WorkItemStatus.InProgress, "Omer"),
-        Make("totals", TaskType.Regression, "Fix: wrong total hours after filtering", 3, WorkItemStatus.InQA, "Yuval"),
-        Make("authqa", TaskType.TestingQa, "Regression suite for login and roles", 8, WorkItemStatus.InQA, "Shira", ["jwt"]),
-        Make("dnd", TaskType.Integration, "Drag and drop between columns", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
-        Make("a11y", TaskType.Accessibility, "Keyboard and screen reader support on the board", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
-        Make("perf", TaskType.Performance, "Make the board load fast with 500 tasks", 10, WorkItemStatus.ToDo, "Omer", ["boardui"], deadlineIn: 6),
-        Make("staging", TaskType.Infrastructure, "Staging deployment", 6, WorkItemStatus.ToDo, "Gal", ["docker"]),
-        Make("mail", TaskType.Integration, "Connect the email notifications provider", 8, WorkItemStatus.ToDo, "Lior"),
-        Make("apidocs", TaskType.Documentation, "Write the API reference", 6, WorkItemStatus.ToDo, "Lior"),
-        Make("guide", TaskType.Documentation, "User guide for managers and members", 6, WorkItemStatus.ToDo, "Tamar", deadlineIn: 4),
-        Make("dndqa", TaskType.TestingQa, "Exploratory testing of drag and drop", 6, WorkItemStatus.ToDo, "Ido", ["dnd"]),
-        Make("browsers", TaskType.TestingQa, "Cross-browser checks: Chrome, Firefox, Safari", 6, WorkItemStatus.ToDo, "Ido", ["boardui"]),
-        Make("load", TaskType.Performance, "Load test the API", 8, WorkItemStatus.ToDo, "Ido", ["perf"]),
-        Make("pentest", TaskType.Security, "Security test of the public endpoints", 8, WorkItemStatus.ToDo, "Shira", ["jwt"]),
+        Make("schema", TaskType.Task, "Migrate task storage to the new schema", 8, WorkItemStatus.Done, "Omer", doneDay: 0),
+        Make("mockups", TaskType.UserStory, "Design the sprint board mockups", 8, WorkItemStatus.Done, "Tamar", doneDay: 1),
+        Make("ci", TaskType.Task, "CI pipeline with build and test stages", 6, WorkItemStatus.Done, "Gal", doneDay: 1),
+        Make("testplan", TaskType.TestCase, "Test plan for the sprint board", 6, WorkItemStatus.Done, "Shira", doneDay: 2),
+        Make("jwt", TaskType.Issue, "Harden JWT login and role checks", 10, WorkItemStatus.Done, "Lior", ["schema"], doneDay: 2),
+        Make("boardui", TaskType.Feature, "Connect the board UI to the sprint API", 12, WorkItemStatus.InProgress, "Tamar", ["mockups"]),
+        Make("docker", TaskType.Task, "Dockerize the API and the client", 6, WorkItemStatus.InProgress, "Gal", ["ci"]),
+        Make("jumpback", TaskType.Bug, "Fix: a moved card jumps back after refresh", 4, WorkItemStatus.InProgress, "Omer"),
+        Make("totals", TaskType.Bug, "Fix: wrong total hours after filtering", 3, WorkItemStatus.InQA, "Yuval"),
+        Make("authqa", TaskType.TestCase, "Regression suite for login and roles", 8, WorkItemStatus.InQA, "Shira", ["jwt"]),
+        Make("dnd", TaskType.Feature, "Drag and drop between columns", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
+        Make("a11y", TaskType.Feature, "Keyboard and screen reader support on the board", 8, WorkItemStatus.ToDo, "Yuval", ["boardui"]),
+        Make("perf", TaskType.Task, "Make the board load fast with 500 tasks", 10, WorkItemStatus.ToDo, "Omer", ["boardui"], deadlineIn: 6),
+        Make("staging", TaskType.Task, "Staging deployment", 6, WorkItemStatus.ToDo, "Gal", ["docker"]),
+        Make("mail", TaskType.Feature, "Connect the email notifications provider", 8, WorkItemStatus.ToDo, "Lior"),
+        Make("apidocs", TaskType.Ticket, "Write the API reference", 6, WorkItemStatus.ToDo, "Lior"),
+        Make("guide", TaskType.Ticket, "User guide for managers and members", 6, WorkItemStatus.ToDo, "Tamar", deadlineIn: 4),
+        Make("dndqa", TaskType.TestCase, "Exploratory testing of drag and drop", 6, WorkItemStatus.ToDo, "Ido", ["dnd"]),
+        Make("browsers", TaskType.TestCase, "Cross-browser checks: Chrome, Firefox, Safari", 6, WorkItemStatus.ToDo, "Ido", ["boardui"]),
+        Make("load", TaskType.Task, "Load test the API", 8, WorkItemStatus.ToDo, "Ido", ["perf"]),
+        Make("pentest", TaskType.Issue, "Security test of the public endpoints", 8, WorkItemStatus.ToDo, "Shira", ["jwt"]),
         // Backlog: not planned into a sprint yet.
         Make("mobile", TaskType.Epic, "Mobile app", 8, WorkItemStatus.ToDo, null, inSprint: false),
-        Make("comments", TaskType.Migration, "Move comments to their own collection", 6, WorkItemStatus.ToDo, null, inSprint: false),
-        Make("contrast", TaskType.Accessibility, "Colour contrast audit of every screen", 4, WorkItemStatus.ToDo, null, inSprint: false),
-        Make("slack", TaskType.Integration, "Slack integration for sprint updates", 10, WorkItemStatus.ToDo, null, inSprint: false),
-        Make("budget", TaskType.Performance, "Page load budget enforced in CI", 4, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("comments", TaskType.Task, "Move comments to their own collection", 6, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("contrast", TaskType.Feature, "Colour contrast audit of every screen", 4, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("slack", TaskType.Feature, "Slack integration for sprint updates", 10, WorkItemStatus.ToDo, null, inSprint: false),
+        Make("budget", TaskType.Task, "Page load budget enforced in CI", 4, WorkItemStatus.ToDo, null, inSprint: false),
     };
 
     foreach (var task in plan)
@@ -536,45 +553,45 @@ async Task AddTypedTasksAsync(string ownerEmail, string projectName)
     Add(TaskType.Epic, "Notifications and reminders", 4, WorkItemStatus.ToDo, "Noa");
     Add(TaskType.Epic, "Public API for partners", 6, WorkItemStatus.ToDo, null, inSprint: false);
     // Design Task
-    Add(TaskType.DesignTask, "Design the task detail page", 6, WorkItemStatus.ToDo, "Tamar", "Design the sprint board mockups");
-    Add(TaskType.DesignTask, "Design empty and error states", 4, WorkItemStatus.ToDo, "Yuval");
-    Add(TaskType.DesignTask, "Icon set and spacing audit", 4, WorkItemStatus.Done, "Tamar", doneDay: 2);
+    Add(TaskType.UserStory, "Design the task detail page", 6, WorkItemStatus.ToDo, "Tamar", "Design the sprint board mockups");
+    Add(TaskType.UserStory, "Design empty and error states", 4, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.UserStory, "Icon set and spacing audit", 4, WorkItemStatus.Done, "Tamar", doneDay: 2);
     // Documentation
-    Add(TaskType.Documentation, "Onboarding guide for new developers", 5, WorkItemStatus.ToDo, "Gal");
-    Add(TaskType.Documentation, "Document the board keyboard shortcuts", 3, WorkItemStatus.ToDo, "Yuval");
-    Add(TaskType.Documentation, "Architecture decision records", 4, WorkItemStatus.Done, "Lior", doneDay: 2);
+    Add(TaskType.Ticket, "Onboarding guide for new developers", 5, WorkItemStatus.ToDo, "Gal");
+    Add(TaskType.Ticket, "Document the board keyboard shortcuts", 3, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Ticket, "Architecture decision records", 4, WorkItemStatus.Done, "Lior", doneDay: 2);
     // Testing / QA
-    Add(TaskType.TestingQa, "Test cases for sprint planning", 6, WorkItemStatus.ToDo, "Shira");
-    Add(TaskType.TestingQa, "Smoke test checklist for releases", 4, WorkItemStatus.Done, "Ido", doneDay: 1);
-    Add(TaskType.TestingQa, "Screen reader test pass", 6, WorkItemStatus.ToDo, "Ido", "Keyboard and screen reader support on the board");
+    Add(TaskType.TestCase, "Test cases for sprint planning", 6, WorkItemStatus.ToDo, "Shira");
+    Add(TaskType.TestCase, "Smoke test checklist for releases", 4, WorkItemStatus.Done, "Ido", doneDay: 1);
+    Add(TaskType.TestCase, "Screen reader test pass", 6, WorkItemStatus.ToDo, "Ido", "Keyboard and screen reader support on the board");
     // Performance
-    Add(TaskType.Performance, "Cache the dashboard queries", 6, WorkItemStatus.ToDo, "Lior");
-    Add(TaskType.Performance, "Reduce the bundle size of the board page", 5, WorkItemStatus.ToDo, "Yuval");
-    Add(TaskType.Performance, "Profile slow sprint planning runs", 6, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Task, "Cache the dashboard queries", 6, WorkItemStatus.ToDo, "Lior");
+    Add(TaskType.Task, "Reduce the bundle size of the board page", 5, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Task, "Profile slow sprint planning runs", 6, WorkItemStatus.ToDo, "Omer");
     // Security
-    Add(TaskType.Security, "Rate limit the login endpoint", 5, WorkItemStatus.ToDo, "Lior", "Harden JWT login and role checks");
-    Add(TaskType.Security, "Audit dependencies for known vulnerabilities", 4, WorkItemStatus.Done, "Gal", doneDay: 2);
-    Add(TaskType.Security, "Store and rotate signing keys safely", 5, WorkItemStatus.ToDo, "Gal");
+    Add(TaskType.Issue, "Rate limit the login endpoint", 5, WorkItemStatus.ToDo, "Lior", "Harden JWT login and role checks");
+    Add(TaskType.Issue, "Audit dependencies for known vulnerabilities", 4, WorkItemStatus.Done, "Gal", doneDay: 2);
+    Add(TaskType.Issue, "Store and rotate signing keys safely", 5, WorkItemStatus.ToDo, "Gal");
     // Infrastructure / DevOps
-    Add(TaskType.Infrastructure, "Database backups and restore test", 6, WorkItemStatus.ToDo, "Gal");
-    Add(TaskType.Infrastructure, "Health checks and uptime alerts", 5, WorkItemStatus.InQA, "Gal");
-    Add(TaskType.Infrastructure, "Preview environments for pull requests", 8, WorkItemStatus.ToDo, null, inSprint: false);
+    Add(TaskType.Task, "Database backups and restore test", 6, WorkItemStatus.ToDo, "Gal");
+    Add(TaskType.Task, "Health checks and uptime alerts", 5, WorkItemStatus.InQA, "Gal");
+    Add(TaskType.Task, "Preview environments for pull requests", 8, WorkItemStatus.ToDo, null, inSprint: false);
     // Migration
-    Add(TaskType.Migration, "Move task history to its own collection", 6, WorkItemStatus.ToDo, "Omer");
-    Add(TaskType.Migration, "Upgrade to the latest .NET and React versions", 8, WorkItemStatus.ToDo, "Omer");
-    Add(TaskType.Migration, "Import tasks from a CSV file", 6, WorkItemStatus.ToDo, null, inSprint: false);
+    Add(TaskType.Task, "Move task history to its own collection", 6, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Task, "Upgrade to the latest .NET and React versions", 8, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Task, "Import tasks from a CSV file", 6, WorkItemStatus.ToDo, null, inSprint: false);
     // Accessibility
-    Add(TaskType.Accessibility, "Fix the focus order in dialogs", 4, WorkItemStatus.ToDo, "Yuval");
-    Add(TaskType.Accessibility, "Add text alternatives to the charts", 4, WorkItemStatus.ToDo, "Tamar");
-    Add(TaskType.Accessibility, "High contrast mode check", 4, WorkItemStatus.ToDo, null, inSprint: false);
+    Add(TaskType.Feature, "Fix the focus order in dialogs", 4, WorkItemStatus.ToDo, "Yuval");
+    Add(TaskType.Feature, "Add text alternatives to the charts", 4, WorkItemStatus.ToDo, "Tamar");
+    Add(TaskType.Feature, "High contrast mode check", 4, WorkItemStatus.ToDo, null, inSprint: false);
     // Integration
-    Add(TaskType.Integration, "Link GitHub pull requests to tasks", 8, WorkItemStatus.ToDo, "Lior");
-    Add(TaskType.Integration, "Calendar export of sprint dates", 5, WorkItemStatus.ToDo, "Omer");
-    Add(TaskType.Integration, "Webhook for status changes", 6, WorkItemStatus.ToDo, null, inSprint: false);
+    Add(TaskType.Feature, "Link GitHub pull requests to tasks", 8, WorkItemStatus.ToDo, "Lior");
+    Add(TaskType.Feature, "Calendar export of sprint dates", 5, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Feature, "Webhook for status changes", 6, WorkItemStatus.ToDo, null, inSprint: false);
     // Regression
-    Add(TaskType.Regression, "Fix: sprint day is wrong after midnight", 3, WorkItemStatus.ToDo, "Omer");
-    Add(TaskType.Regression, "Fix: assignee menu closes on the first click", 2, WorkItemStatus.Done, "Yuval", doneDay: 2);
-    Add(TaskType.Regression, "Fix: dashboard forecast is missing after a reset", 3, WorkItemStatus.ToDo, "Lior");
+    Add(TaskType.Bug, "Fix: sprint day is wrong after midnight", 3, WorkItemStatus.ToDo, "Omer");
+    Add(TaskType.Bug, "Fix: assignee menu closes on the first click", 2, WorkItemStatus.Done, "Yuval", doneDay: 2);
+    Add(TaskType.Bug, "Fix: dashboard forecast is missing after a reset", 3, WorkItemStatus.ToDo, "Lior");
 
     foreach (var task in added)
     {

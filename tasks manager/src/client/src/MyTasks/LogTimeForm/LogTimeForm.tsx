@@ -39,7 +39,7 @@ export function LogTimeForm({ items }: { items: MyTaskDto[] }) {
         return
       }
     }
-    setMessage({ severity: 'success', text: 'Saved.' })
+    setMessage({ severity: 'success', text: 'Saved' })
     setMoveTo('keep')
   }
 

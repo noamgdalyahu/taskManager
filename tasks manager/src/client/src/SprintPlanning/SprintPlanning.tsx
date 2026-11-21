@@ -41,7 +41,7 @@ export function SprintPlanning() {
     return (
       <EmptyState
         title="No sprints yet"
-        description="Create a sprint on the Backlog page, then come back to plan it."
+        description="Create a sprint on the Backlog page, then come back to plan it"
         action={
           <Button component={Link} to={`/p/${projectId}`} variant="contained">
             Go to the backlog
@@ -129,7 +129,6 @@ function PlanningBody({ projectId, projectName, sprint, sprints }: PlanningBodyP
 
       {(start.error || transition.error || accept.error) && <ErrorState error={start.error ?? transition.error ?? accept.error} />}
 
-      <SprintCapacity sprints={sprints} current={sprint} tasks={tasks.data ?? []} members={members} canStart={isManager} starting={transition.isPending} onStart={(id) => void startSprint(id)} />
       <PlanSummary sprint={sprint} memberCount={members.length} backlogCount={backlogCount} plan={plan} />
       {plan && <PlanWarnings warnings={plan.warnings} />}
 
@@ -142,6 +141,7 @@ function PlanningBody({ projectId, projectName, sprint, sprints }: PlanningBodyP
             <WorkloadAfterAssignment plan={plan} members={members} sprint={sprint} />
           </Box>
           <PlanComparison sprintId={sprint.id} />
+          <SprintCapacity sprints={sprints} current={sprint} tasks={tasks.data ?? []} members={members} canStart={isManager} starting={transition.isPending} onStart={(id) => void startSprint(id)} />
         </Box>
       </Box>
 

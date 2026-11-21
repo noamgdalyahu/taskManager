@@ -34,7 +34,7 @@ export function Dashboard() {
     return (
       <EmptyState
         title="No sprint to report on yet"
-        description="The dashboard fills in once a sprint exists and has tasks."
+        description="The dashboard fills in once a sprint exists and has tasks"
         action={
           <Button component={Link} to={`/p/${projectId}`} variant="contained">
             Go to the backlog
@@ -59,7 +59,7 @@ export function Dashboard() {
         }
       />
 
-      {dashboard.isLoading && <PageLoading />}
+      {dashboard.isLoading && <PageLoading header={false} />}
       {dashboard.error && <ErrorState error={dashboard.error} onRetry={() => dashboard.refetch()} />}
 
       {data && (

@@ -43,7 +43,7 @@ export function BurndownChart({ ideal, actual, forecast, title = 'Burndown' }: B
         <Legend color={tokens.color.stQa} label="Forecast" dotted />
       </Box>
       {dates.length === 0 ? (
-        <Box sx={{ mt: 2, color: tokens.color.faint, fontSize: '0.8125rem' }}>No burndown data yet.</Box>
+        <Box sx={{ mt: 2, color: tokens.color.faint, fontSize: '0.8125rem' }}>No burndown data yet</Box>
       ) : (
         <Box component="svg" role="img" aria-label={summary} viewBox={`0 0 ${W} ${H}`} sx={{ mt: 1, width: '100%', height: 'auto', display: 'block' }}>
           {[0, 0.5, 1].map((fraction) => (

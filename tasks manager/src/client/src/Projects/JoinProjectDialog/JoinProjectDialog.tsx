@@ -29,7 +29,7 @@ export function JoinProjectDialog({ open, onClose, onJoined }: { open: boolean; 
           {join.error && <Alert severity="error">{messageOf(join.error)}</Alert>}
           <TextField
             label="Invitation code"
-            helperText="Your manager can create one on the Team page."
+            helperText="Your manager can create one on the Team page"
             autoFocus
             required
             value={code}

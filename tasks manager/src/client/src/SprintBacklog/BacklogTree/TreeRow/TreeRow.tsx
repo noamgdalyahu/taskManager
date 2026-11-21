@@ -36,7 +36,7 @@ export function TreeRow({ task, projectId, sprints, assignee, sprintName, column
   return (
     <Box
       ref={setNodeRef}
-      sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 5, pr: 1, minHeight: 40, borderTop: `1px solid ${tokens.color.border}`, opacity: isDragging ? 0.4 : 1, '&:hover': { bgcolor: tokens.color.wash } }}
+      sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 5, pr: 1, py: '5px', minHeight: 40, borderTop: `1px solid ${tokens.color.border}`, opacity: isDragging ? 0.4 : 1, '&:hover': { bgcolor: tokens.color.wash } }}
     >
       {canMove ? (
         <ButtonBase {...attributes} {...listeners} aria-label={`Drag ${task.title} to a sprint`} sx={{ width: 20, height: 24, borderRadius: `${tokens.radius.key}px`, color: tokens.color.faint, cursor: 'grab', touchAction: 'none' }}>

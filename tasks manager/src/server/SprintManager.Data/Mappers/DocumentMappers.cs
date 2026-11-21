@@ -101,7 +101,8 @@ public static class DocumentMappers
         new DateTimeOffset(DateTime.SpecifyKind(d.CreatedAt, DateTimeKind.Utc)),
         new DateTimeOffset(DateTime.SpecifyKind(d.UpdatedAt, DateTimeKind.Utc)),
         d.CompletedAt is { } c ? new DateTimeOffset(DateTime.SpecifyKind(c, DateTimeKind.Utc)) : null,
-        d.Type is { } type ? Enum.Parse<TaskType>(type) : null);
+        // A value from an older list of types is read as untyped, never as an error (the seed tool's --migrate-types converts them).
+        Enum.TryParse<TaskType>(d.Type, out var type) ? type : null);
 
     /// <summary>Domain to document.</summary>
     public static TaskDocument ToDocument(this TaskItem t) => new()

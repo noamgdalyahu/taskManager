@@ -32,12 +32,12 @@ export function DangerZone({ project, canEdit }: { project: ProjectDto; canEdit:
         <Button color={project.isArchived ? 'primary' : 'error'} variant="outlined" disabled={!canEdit} onClick={() => setConfirming(true)}>
           {project.isArchived ? 'Restore this project' : 'Archive this project'}
         </Button>
-        {!canEdit && <Box sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>Only managers can archive a project.</Box>}
+        {!canEdit && <Box sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>Only managers can archive a project</Box>}
       </Box>
       <Dialog open={confirming} onClose={() => setConfirming(false)}>
         <DialogTitle>{project.isArchived ? 'Restore' : 'Archive'} “{project.name}”?</DialogTitle>
         <DialogContent>
-          <DialogContentText>{project.isArchived ? 'It will appear in the project list again.' : 'Its sprints, work items and history are kept. It disappears from the project list until you restore it.'}</DialogContentText>
+          <DialogContentText>{project.isArchived ? 'It will appear in the project list again' : 'Its sprints, work items and history are kept. It disappears from the project list until you restore it.'}</DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button variant="outlined" onClick={() => setConfirming(false)}>

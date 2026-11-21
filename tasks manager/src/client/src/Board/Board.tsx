@@ -16,7 +16,7 @@ import { TaskCardView } from '@/Board/BoardGrid/StoryLane/LaneCell/TaskCard/Task
 import { BoardHeader } from '@/Board/BoardHeader/BoardHeader'
 import { BoardSettingsDialog } from '@/Board/BoardSettingsDialog/BoardSettingsDialog'
 import { BoardTabs } from '@/Board/BoardTabs/BoardTabs'
-import { buildLanes, sumHours } from '@/Board/boardLanes'
+import { buildLanes, sumHours, type LaneGrouping } from '@/Board/boardLanes'
 import { SidePanel } from '@/Board/SidePanel/SidePanel'
 import { StatStrip } from '@/Board/StatStrip/StatStrip'
 import { matchesFilter, useBoardFilter } from '@/Board/useBoardFilter'
@@ -55,6 +55,25 @@ export function Board() {
   const [creating, setCreating] = useState(false)
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [fullscreen, setFullscreen] = useState(false)
+  // How the lanes are formed. Remembered in this browser, so the board opens the way it was left.
+  const [grouping, setGroupingState] = useState<LaneGrouping>(() => {
+    try {
+      const saved = localStorage.getItem('sm.board.grouping')
+      // With nothing chosen yet the board opens ungrouped; a saved choice wins.
+      return saved === 'type' || saved === 'assignee' || saved === 'none' ? saved : 'none'
+    } catch {
+      return 'none'
+    }
+  })
+  const setGrouping = (next: LaneGrouping) => {
+    setGroupingState(next)
+    setCollapsed(new Set())
+    try {
+      localStorage.setItem('sm.board.grouping', next)
+    } catch {
+      // not remembered; still applied
+    }
+  }
 
   // Esc leaves full screen; Ctrl+N starts a new task (where the browser lets a page have the shortcut).
   useEffect(() => {
@@ -80,15 +99,15 @@ export function Board() {
   const criticalIds = useMemo(() => new Set(dashboard.data?.criticalPath ?? []), [dashboard.data])
 
   const visible = useMemo(() => allTasks.filter((task) => matchesFilter(task, filter)), [allTasks, filter])
-  const lanes = useMemo(() => buildLanes(visible), [visible])
+  const lanes = useMemo(() => buildLanes(visible, grouping, (id) => byId.get(id)?.name ?? 'Unknown'), [visible, grouping, byId])
   const totals = useMemo(() => Object.fromEntries(TASK_STATUSES.map((status) => [status, allTasks.filter((task) => task.status === status).length])) as Record<TaskStatus, number>, [allTasks])
 
-  if (sprintsLoading || project.isLoading) return <PageLoading />
+  if (sprintsLoading || project.isLoading) return <PageLoading shape="board" />
   if (!sprint) {
     return (
       <EmptyState
         title="There is no sprint to show yet"
-        description={isManager ? 'Create a sprint, choose its tasks and start it, then the board fills in.' : 'Your manager has not created a sprint for this project yet.'}
+        description={isManager ? 'Create a sprint, choose its tasks and start it, then the board fills in' : 'Your manager has not created a sprint for this project yet'}
         action={
           isManager ? (
             <Button component={Link} to={`/p/${projectId}`} variant="contained">
@@ -145,16 +164,12 @@ export function Board() {
         sprint={sprint}
         sprints={sprints}
         onSelectSprint={goTo}
-        members={members}
-        selectedPeople={filter.assignees}
-        onTogglePerson={togglePerson}
-        onClearPeople={() => setFilter({ ...filter, assignees: [] })}
         onNewItem={() => setCreating(true)}
       />
       <BoardTabs />
 
       {board.error && <ErrorState error={board.error} onRetry={() => board.refetch()} />}
-      {board.isLoading && <PageLoading />}
+      {board.isLoading && <PageLoading shape="board" header={false} />}
 
       {board.data && (
         <>
@@ -178,13 +193,15 @@ export function Board() {
                 collapsed={collapsed}
                 onToggleLane={toggleLane}
                 onToggleAll={toggleAll}
+                grouping={grouping}
+                onGrouping={setGrouping}
                 fullscreen={fullscreen}
                 onToggleFullscreen={() => setFullscreen((value) => !value)}
                 onAddTask={() => setCreating(true)}
                 toolbarExtra={
                   isManager ? (
                     <HairlineButton onClick={() => setSettingsOpen(true)} aria-label="Board settings" title="Board settings" sx={{ width: 32, px: 0 }}>
-                      <SettingsOutlined />
+                      <SettingsOutlined aria-hidden />
                     </HairlineButton>
                   ) : undefined
                 }

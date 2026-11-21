@@ -52,7 +52,7 @@ export function BacklogTree({ tasks, projectId, sprints, members, parents, colla
         <Box sx={{ width: 76, textAlign: 'right' }}>Remaining</Box>
         <Box sx={{ width: 76, textAlign: 'right' }}>Done</Box>
       </Box>
-      {tasks.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: tokens.color.faint, fontSize: '0.8125rem' }}>No work items match these filters.</Box>}
+      {tasks.length === 0 && <Box sx={{ p: 4, textAlign: 'center', color: tokens.color.faint, fontSize: '0.8125rem' }}>No work items match these filters</Box>}
       {sections
         .filter((section) => section.tasks.length > 0)
         .map((section) => (

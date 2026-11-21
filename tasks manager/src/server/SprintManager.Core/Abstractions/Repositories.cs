@@ -79,6 +79,9 @@ public interface ITaskRepository
 
     /// <summary>Replaces several tasks (applying an accepted plan).</summary>
     Task UpdateManyAsync(IReadOnlyCollection<TaskItem> tasks, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes a task. Its comments, time logs and history are removed by their own repositories.</summary>
+    Task DeleteAsync(TaskId id, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Time logs.</summary>
@@ -92,6 +95,9 @@ public interface ITimeLogRepository
 
     /// <summary>Inserts.</summary>
     Task AddAsync(TimeLog log, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes every log of a task (when the task is deleted).</summary>
+    Task DeleteForTaskAsync(TaskId taskId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Comments.</summary>
@@ -105,6 +111,9 @@ public interface ICommentRepository
 
     /// <summary>Deletes by id; returns false when absent.</summary>
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes every comment of a task (when the task is deleted).</summary>
+    Task DeleteForTaskAsync(TaskId taskId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Audit history.</summary>
@@ -115,6 +124,9 @@ public interface IHistoryRepository
 
     /// <summary>Appends entries.</summary>
     Task AddManyAsync(IReadOnlyCollection<HistoryEntry> entries, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes the whole history of a task (when the task is deleted).</summary>
+    Task DeleteForTaskAsync(TaskId taskId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Invitations.</summary>

@@ -35,7 +35,7 @@ export function TypesSection({ allTasks, selected, onToggleType }: TypesSectionP
       </ButtonBase>
       {open && (
         <Box id="types-list" sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {present.length === 0 && <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>No task has a type yet.</Box>}
+          {present.length === 0 && <Box sx={{ fontSize: '0.75rem', color: tokens.color.faint }}>No task has a type yet</Box>}
           {present.map((type) => {
             const pressed = selected.includes(type)
             return (
