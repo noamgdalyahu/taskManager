@@ -1,0 +1,18 @@
+# Visual Studio / editors
+.vs/
+.vscode/
+.idea/
+
+# Claude Code: local skills and settings
+.claude/
+src/client/.claude/
+
+# Build output
+bin/
+obj/
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db

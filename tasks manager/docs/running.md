@@ -46,9 +46,10 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. Vite forwards `/api` to the server, so there is nothing to configure.
+Open http://localhost:5173. Vite forwards `/api` to `http://localhost:5263` (the port from `launchSettings.json`). If you
+start the server on another port, such as 5080 above, set `API_URL` first, for example `API_URL=http://localhost:5080 npm run dev`.
 
-Other client commands: `npm run build` (type-check and production build), `npm run lint`,
+Other client commands: `npm test` (Vitest), `npm run build` (type-check and production build), `npm run lint`,
 `npm run api:types` (regenerate the TypeScript types from the running server's OpenAPI document).
 
 ## Tests

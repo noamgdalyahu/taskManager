@@ -21,67 +21,9 @@ docs/        running, architecture, decision log, performance
 
 ## Pages
 
-Everyone in a project sees every page; only the editing controls are reserved for managers. Every page is its own
-lazily loaded chunk.
-
-### Login / Register — `/login`
-Sign in or create an account. Sessions use JWT tokens; passwords are hashed with PBKDF2.
-
-### Projects — `/projects`
-Every project you belong to, as cards. Create a new project, or join an existing one with an invite code.
-
-### Overview — `/p/:projectId`
-The project's home page: the list of **sprints** with their progress and the product **backlog** at a glance.
-
-### Work items — `/p/:projectId/work-items`
-The full list of tasks in the project. Create, edit, delete and filter work items (stories, tasks, bugs and any other
-types defined in the project settings), including their estimates, required skills and dependencies.
-
-### Sprint board — `/p/:projectId/board/:sprintId?`
-A Kanban board for a sprint.
-- Cards can be grouped (for example by story) into swim lanes with roll-up progress.
-- Drag a card to change its status. If a prerequisite is not done, the card **snaps back and explains why**.
-- Work-in-progress limits per column, assignee picker, move menu, and a side panel with filters, team capacity and a
-  preview of the next sprint.
-
-### Backlog — `/p/:projectId/backlog`
-The sprint backlog as a tree of stories and their child tasks, with the sprint's targets.
-
-### Sprint planning — `/p/:projectId/planning/:sprintId?`
-The heart of the project.
-- **Suggest plan** returns immediately; the calculation runs in a background worker and the page polls for the result.
-- The plan shows the **critical path**, a reason for every assignment, and **workload after assignment** per member.
-- **Compare** puts the manual assignment, a naive **Greedy** baseline and the **Hungarian** optimum side by side on the
-  same cost function.
-- Warnings (overloaded members, missing skills, dependency cycles), dependency chains, sprint capacity, and a backlog
-  picker to choose what goes into the sprint.
-- Accept the plan to apply the assignments.
-
-### Dashboard — `/p/:projectId/dashboard/:sprintId?`
-The manager's overview of a sprint: KPI row, completion **forecast**, burndown, status pie, work by type, member
-workload, and an **at-risk tasks** list.
-
-### Reports — `/p/:projectId/reports`
-Pick a report and a sprint range, then export it as CSV: **Burndown**, **Velocity**, **Cumulative flow**,
-**Capacity utilization**, member estimate accuracy and sprint history.
-
-### Team — `/p/:projectId/team`
-Members and roles, an invite panel (invite codes) and removing members.
-
-### Project settings — `/p/:projectId/settings`
-General details, sprint defaults, task types, team settings and a danger zone (delete the project). Members can read
-the settings; only managers can change them.
-
-### Task detail — `/p/:projectId/tasks/:taskId`
-One task in full: summary, comment thread, time log list, and an activity log of every change (recorded through an
-observer on task-change events).
-
-### My tasks — `/me/tasks`
-For members: their tasks **sorted by priority** (due date, critical path, and how many tasks each one blocks), a panel
-for the current sprint, and a form to log time.
-
-### Profile — `/profile`
-Name, password and **skills**. Skills and weekly hours are what the planner uses to decide which tasks a member can get.
+Login, Projects, Overview, Work items, Sprint board, Backlog, Sprint planning, Dashboard, Reports, Team, Project
+settings, Task detail, My tasks and Profile. Each one is described in the
+[wiki](https://github.com/noamgdalyahu/taskManager/wiki).
 
 ## Algorithms
 

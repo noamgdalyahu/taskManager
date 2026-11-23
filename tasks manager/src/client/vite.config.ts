@@ -13,6 +13,6 @@ export default defineConfig({
   server: {
     port: 5173,
     // In development the browser talks to Vite, Vite forwards /api to the C# server, so there is no CORS to configure.
-    proxy: { '/api': { target: 'http://localhost:5263', changeOrigin: true } },
+    proxy: { '/api': { target: process.env.API_URL ?? 'http://localhost:5263', changeOrigin: true } },
   },
 })

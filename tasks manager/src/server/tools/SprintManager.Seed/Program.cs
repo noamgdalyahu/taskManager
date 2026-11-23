@@ -23,9 +23,19 @@ const string Password = "Demo1234!";
 var arguments = args.ToList();
 string Option(string name, string fallback) => arguments.IndexOf(name) is >= 0 and var i && i + 1 < arguments.Count ? arguments[i + 1] : fallback;
 
+// The demo accounts share a public password, so the seed refuses to touch a database that is not on this machine
+// unless the caller says so explicitly.
+var mongoConnection = Option("--mongo", "mongodb://localhost:27017");
+var isLocal = mongoConnection.Contains("localhost", StringComparison.OrdinalIgnoreCase) || mongoConnection.Contains("127.0.0.1");
+if (!isLocal && !arguments.Contains("--allow-remote"))
+{
+    Console.Error.WriteLine("Refusing to seed a non-local database. Pass --allow-remote if you really mean it.");
+    Environment.Exit(1);
+}
+
 var context = new MongoContext(Options.Create(new MongoOptions
 {
-    ConnectionString = Option("--mongo", "mongodb://localhost:27017"),
+    ConnectionString = mongoConnection,
     DatabaseName = Option("--db", "sprintmanager"),
 }));
 await new MongoIndexInitializer(context).StartAsync(CancellationToken.None);
