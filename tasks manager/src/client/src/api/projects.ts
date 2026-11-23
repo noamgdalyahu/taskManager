@@ -68,3 +68,27 @@ export function useRemoveMember(projectId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.project(projectId) }),
   })
 }
+
+/** Rename a project or change its description (managers). */
+export function useUpdateProject(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: ProjectRequest) => http<ProjectDto>(`/projects/${projectId}`, { method: 'PUT', body }),
+    onSuccess: (project) => {
+      qc.setQueryData(keys.project(projectId), project)
+      void qc.invalidateQueries({ queryKey: keys.projects })
+    },
+  })
+}
+
+/** Archive a project, or restore it with `archived: false` (managers). The server has no delete. */
+export function useArchiveProject(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (archived: boolean) => http<ProjectDto>(`/projects/${projectId}/archive?archived=${archived}`, { method: 'PATCH' }),
+    onSuccess: (project) => {
+      qc.setQueryData(keys.project(projectId), project)
+      void qc.invalidateQueries({ queryKey: keys.projects })
+    },
+  })
+}

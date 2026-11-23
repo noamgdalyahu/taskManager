@@ -37,7 +37,7 @@ export function ActivityLog({ history, members }: { history: HistoryDto[]; membe
       <Typography variant="h2" component="h2" sx={{ mb: 1 }}>
         History
       </Typography>
-      {history.length === 0 && <Typography color="text.secondary">No changes recorded.</Typography>}
+      {history.length === 0 && <Typography color="text.secondary">No changes recorded</Typography>}
       {history.map((entry) => (
         <Box key={entry.id} sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}>
           <Typography variant="body2">

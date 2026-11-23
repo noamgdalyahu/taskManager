@@ -60,6 +60,7 @@ public sealed class FakeTasks : ITaskRepository
     public Task AddAsync(TaskItem task, CancellationToken ct = default) { Items[task.Id] = task; return Task.CompletedTask; }
     public Task UpdateAsync(TaskItem task, CancellationToken ct = default) { Items[task.Id] = task; return Task.CompletedTask; }
     public Task UpdateManyAsync(IReadOnlyCollection<TaskItem> tasks, CancellationToken ct = default) { foreach (var t in tasks) Items[t.Id] = t; return Task.CompletedTask; }
+    public Task DeleteAsync(TaskId id, CancellationToken ct = default) { Items.Remove(id); return Task.CompletedTask; }
 }
 
 public sealed class FakeComments : ICommentRepository
@@ -69,6 +70,7 @@ public sealed class FakeComments : ICommentRepository
         Task.FromResult<IReadOnlyList<Comment>>(Items.Where(c => c.TaskId == taskId).OrderBy(c => c.CreatedAt).ToList());
     public Task AddAsync(Comment comment, CancellationToken ct = default) { Items.Add(comment); return Task.CompletedTask; }
     public Task<bool> DeleteAsync(Guid id, CancellationToken ct = default) => Task.FromResult(Items.RemoveAll(c => c.Id == id) > 0);
+    public Task DeleteForTaskAsync(TaskId taskId, CancellationToken ct = default) { Items.RemoveAll(c => c.TaskId == taskId); return Task.CompletedTask; }
 }
 
 public sealed class FakeHistory : IHistoryRepository
@@ -77,6 +79,7 @@ public sealed class FakeHistory : IHistoryRepository
     public Task<IReadOnlyList<HistoryEntry>> GetForTaskAsync(TaskId taskId, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<HistoryEntry>>(Items.Where(h => h.TaskId == taskId).OrderByDescending(h => h.At).ToList());
     public Task AddManyAsync(IReadOnlyCollection<HistoryEntry> entries, CancellationToken ct = default) { Items.AddRange(entries); return Task.CompletedTask; }
+    public Task DeleteForTaskAsync(TaskId taskId, CancellationToken ct = default) { Items.RemoveAll(h => h.TaskId == taskId); return Task.CompletedTask; }
 }
 
 public sealed class FakeTimeLogs : ITimeLogRepository
@@ -87,6 +90,7 @@ public sealed class FakeTimeLogs : ITimeLogRepository
     public Task<IReadOnlyList<TimeLog>> GetForTasksAsync(IReadOnlyCollection<TaskId> taskIds, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<TimeLog>>(Items.Where(l => taskIds.Contains(l.TaskId)).ToList());
     public Task AddAsync(TimeLog log, CancellationToken ct = default) { Items.Add(log); return Task.CompletedTask; }
+    public Task DeleteForTaskAsync(TaskId taskId, CancellationToken ct = default) { Items.RemoveAll(l => l.TaskId == taskId); return Task.CompletedTask; }
 }
 
 public sealed class FakeInvitations : IInvitationRepository

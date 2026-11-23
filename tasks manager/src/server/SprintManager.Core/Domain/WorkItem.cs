@@ -13,6 +13,27 @@ public enum WorkItemStatus
     Done,
 }
 
+/// <summary>What kind of work a task is. A task without a type (older data) is shown as untyped.</summary>
+public enum TaskType
+{
+    /// <summary>Something is broken and needs fixing.</summary>
+    Bug,
+    /// <summary>A requirement describing something a user wants.</summary>
+    UserStory,
+    /// <summary>A specific piece of work to complete.</summary>
+    Task,
+    /// <summary>A large initiative containing multiple work items.</summary>
+    Epic,
+    /// <summary>A new capability or functionality.</summary>
+    Feature,
+    /// <summary>A problem, concern, or item requiring investigation.</summary>
+    Issue,
+    /// <summary>A defined scenario to verify functionality.</summary>
+    TestCase,
+    /// <summary>A general work request or support item.</summary>
+    Ticket,
+}
+
 /// <summary>
 /// The algorithmic view of a task: only the fields the planning algorithms need.
 /// Persistence concerns (description, comments, timestamps) live outside Core.

@@ -1,3 +1,4 @@
+import UnfoldMoreRounded from '@mui/icons-material/UnfoldMoreRounded'
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined'
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined'
 import Box from '@mui/material/Box'
@@ -14,6 +15,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MemberAvatar } from '@/common/MemberAvatar/MemberAvatar'
 import { useCurrentUser, useAuth } from '@/auth/useAuth'
+import { tokens } from '@/theme/tokens'
 
 interface UserMenuProps {
   onNavigate?: () => void
@@ -34,30 +36,28 @@ export function UserMenu({ onNavigate, collapsed = false }: UserMenuProps) {
       onClick={(event) => setAnchor(event.currentTarget)}
       aria-haspopup="menu"
       aria-expanded={!!anchor}
-      aria-label={collapsed ? `${user.name}, ${user.role}. Account menu` : undefined}
+      aria-label={`${user.name}, ${user.role}. Account menu`}
       sx={{
         display: 'flex',
         justifyContent: collapsed ? 'center' : 'flex-start',
         alignItems: 'center',
         gap: 1.25,
-        p: collapsed ? 0.5 : 1.5,
-        minHeight: 56,
+        px: collapsed ? 0 : 1,
+        minHeight: 40,
         width: '100%',
-        borderRadius: 2,
+        borderRadius: `${tokens.radius.control}px`,
         textAlign: 'left',
-        '&:hover': { bgcolor: 'action.hover' },
+        '&:hover': { bgcolor: tokens.color.wash },
       }}
     >
-      <MemberAvatar id={user.id} name={user.name} size={32} />
+      <MemberAvatar id={user.id} name={user.name} size={24} />
       {!collapsed && (
-        <Box sx={{ lineHeight: 1.3, minWidth: 0 }}>
-          <Typography variant="subtitle2" noWrap sx={{ fontSize: '0.8125rem' }}>
+        <>
+          <Typography noWrap sx={{ flex: 1, minWidth: 0, fontSize: '0.8125rem', fontWeight: 500 }}>
             {user.name}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {user.role}
-          </Typography>
-        </Box>
+          <UnfoldMoreRounded aria-hidden sx={{ fontSize: 16, color: tokens.color.faint }} />
+        </>
       )}
     </ButtonBase>
   )

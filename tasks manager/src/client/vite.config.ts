@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    // One copy of React for everything, even if a second dev server rewrites the pre-bundled dependency cache.
+    dedupe: ['react', 'react-dom'],
   },
   server: {
     port: 5173,

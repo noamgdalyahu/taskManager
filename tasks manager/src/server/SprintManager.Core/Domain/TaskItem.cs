@@ -18,6 +18,7 @@ namespace SprintManager.Core.Domain;
 /// <param name="CreatedAt">Creation time.</param>
 /// <param name="UpdatedAt">Last change.</param>
 /// <param name="CompletedAt">When it reached Done; feeds burndown.</param>
+/// <param name="Type">Kind of work, or null for tasks created before types existed.</param>
 public sealed record TaskItem(
     TaskId Id,
     ProjectId ProjectId,
@@ -32,7 +33,8 @@ public sealed record TaskItem(
     IReadOnlyList<TaskId> DependsOn,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset? CompletedAt)
+    DateTimeOffset? CompletedAt,
+    TaskType? Type = null)
 {
     /// <summary>Projection for the planning algorithms.</summary>
     public WorkItem ToWorkItem() => new(Id, Title, Estimate, DependsOn, RequiredSkills, Deadline, Status, AssigneeId);

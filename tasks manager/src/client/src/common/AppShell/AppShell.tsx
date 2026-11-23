@@ -12,7 +12,7 @@ import { PageLoading } from '@/common/PageLoading/PageLoading'
 import { springs } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
 
-/** The frame around every signed-in screen: a collapsible sidebar on a desktop, top bar and drawer on a phone. */
+/** The frame around every signed-in screen: a collapsible sidebar on a desktop, a top bar and a drawer below 900px. */
 export function AppShell() {
   const theme = useTheme()
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'))
@@ -20,10 +20,10 @@ export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: { md: 'flex' } }}>
+    <Box sx={{ minHeight: '100dvh', display: { md: 'flex' }, bgcolor: tokens.color.canvas }}>
       {isDesktop ? (
         // The column's width is a spring, not a timed transition: toggling twice quickly reverses smoothly from wherever it
-        // is (apple-design, interruptibility). MotionConfig at the root turns the movement off for reduced-motion users.
+        // is. MotionConfig at the root turns the movement off for reduced-motion users.
         <motion.div
           initial={false}
           animate={{ width: collapsed ? tokens.layout.sidebarCollapsedWidth : tokens.layout.sidebarWidth }}
@@ -35,13 +35,13 @@ export function AppShell() {
       ) : (
         <>
           <MobileTopBar onMenu={() => setMenuOpen(true)} />
-          <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} slotProps={{ paper: { sx: { bgcolor: 'transparent', border: 0, width: tokens.layout.sidebarWidth + 24 } } }}>
+          <Drawer open={menuOpen} onClose={() => setMenuOpen(false)} slotProps={{ paper: { sx: { width: tokens.layout.sidebarWidth + 24, maxWidth: '86vw', backgroundImage: 'none' } } }}>
             <Sidebar collapsible={false} onNavigate={() => setMenuOpen(false)} />
           </Drawer>
         </>
       )}
-      <Box component="main" sx={{ flex: 1, minWidth: 0, px: { xs: 2, md: 3 }, pt: { xs: 2.5, md: 3.5 }, pb: 6 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+      <Box component="main" sx={{ flex: 1, minWidth: 0, px: 2, pt: 2, pb: 6 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Pages load on demand; the sidebar stays put while a page's code arrives. */}
           <Suspense fallback={<PageLoading />}>
             <Outlet />

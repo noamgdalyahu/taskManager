@@ -9,6 +9,7 @@ import { useAuth } from '@/auth/useAuth'
 import { LoginForm } from '@/Login/LoginForm/LoginForm'
 import { RegisterForm } from '@/Login/RegisterForm/RegisterForm'
 import { Surface } from '@/common/Surface/Surface'
+import { tokens } from '@/theme/tokens'
 
 export function Login() {
   const { user } = useAuth()
@@ -24,8 +25,8 @@ export function Login() {
     <Box sx={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', p: 2 }}>
       <Box sx={{ width: '100%', maxWidth: 400 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, mb: 3 }}>
-          <Box aria-hidden sx={{ width: 48, height: 48, borderRadius: 3, bgcolor: 'primary.main', color: 'primary.contrastText', display: 'grid', placeItems: 'center' }}>
-            <ViewKanbanOutlined />
+          <Box aria-hidden sx={{ width: 40, height: 40, borderRadius: '4px', border: `1px solid ${tokens.color.borderStrong}`, display: 'grid', placeItems: 'center' }}>
+            <ViewKanbanOutlined sx={{ fontSize: 20 }} />
           </Box>
           <Typography variant="h1" component="h1" sx={{ textAlign: 'center' }}>
             Team Sprint Manager

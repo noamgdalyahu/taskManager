@@ -32,6 +32,7 @@ export function BacklogPicker({ sprint, tasks, readOnly }: BacklogPickerProps) {
           estimateHours: task.estimateHours,
           deadline: task.deadline,
           requiredSkills: task.requiredSkills,
+          type: task.type,
           dependsOn: task.dependsOn,
           sprintId: selected ? sprint.id : null,
           assigneeId: task.assigneeId,

@@ -3,7 +3,7 @@ import Button from '@mui/material/Button'
 
 /** Turns anything thrown into a sentence a person can act on, with a retry when one makes sense. */
 export function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : 'Something went wrong.'
+  return error instanceof Error ? error.message : 'Something went wrong'
 }
 
 interface ErrorStateProps {

@@ -69,7 +69,7 @@ public sealed class TaskService(
 
         var now = clock.UtcNow;
         var task = new TaskItem(id, projectId, request.SprintId is { } s ? new SprintId(s) : null, request.Title.Trim(), request.Description?.Trim() ?? "",
-            new Hours(request.EstimateHours), request.Deadline, WorkItemStatus.ToDo, null, Normalise(request.RequiredSkills), deps, now, now, null);
+            new Hours(request.EstimateHours), request.Deadline, WorkItemStatus.ToDo, null, Normalise(request.RequiredSkills), deps, now, now, null, request.Type);
 
         await tasks.AddAsync(task, ct);
         await publisher.PublishAsync(new TaskChanged(null, task, caller.Id, now), ct);
@@ -100,6 +100,7 @@ public sealed class TaskService(
             DependsOn = deps,
             SprintId = request.SprintId is { } s ? new SprintId(s) : null,
             AssigneeId = request.AssigneeId is { } a ? new MemberId(a) : null,
+            Type = request.Type,
             UpdatedAt = clock.UtcNow,
         };
         return await SaveAsync(before, after, caller, projectTasks, ct);
@@ -143,6 +144,30 @@ public sealed class TaskService(
 
         var projectTasks = await tasks.GetForProjectAsync(before.ProjectId, ct);
         return await SaveAsync(before, before with { AssigneeId = assignee, UpdatedAt = clock.UtcNow }, caller, projectTasks, ct);
+    }
+
+    /// <summary>
+    /// Deletes a task (managers). Tasks that waited for it stop waiting (it is removed from their dependencies), and its
+    /// comments, time logs and history go with it. A deleted task does not count in sprint totals or reports any more.
+    /// </summary>
+    public async Task<OperationResult<bool>> DeleteAsync(TaskId id, CurrentUser caller, CancellationToken ct)
+    {
+        var loaded = await taskAccess.AsManagerAsync(id, caller, ct);
+        if (!loaded.IsSuccess)
+            return OperationResult<bool>.Fail(loaded.Error!.Value);
+
+        var now = clock.UtcNow;
+        var dependants = (await tasks.GetForProjectAsync(loaded.Value!.ProjectId, ct))
+            .Where(t => t.DependsOn.Contains(id))
+            .Select(t => t with { DependsOn = t.DependsOn.Where(d => d != id).ToList(), UpdatedAt = now })
+            .ToList();
+        await tasks.UpdateManyAsync(dependants, ct);
+
+        await comments.DeleteForTaskAsync(id, ct);
+        await timeLogs.DeleteForTaskAsync(id, ct);
+        await history.DeleteForTaskAsync(id, ct);
+        await tasks.DeleteAsync(id, ct);
+        return OperationResult<bool>.Ok(true);
     }
 
     // ---- helpers -------------------------------------------------------------

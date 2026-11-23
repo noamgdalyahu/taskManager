@@ -31,7 +31,7 @@ export function VelocityBars({ sprints, average }: VelocityBarsProps) {
         Hours of estimated work finished per working day
       </Typography>
       {sprints.length === 0 ? (
-        <Typography color="text.secondary">Velocity appears after the first sprint has run.</Typography>
+        <Typography color="text.secondary">Velocity appears after the first sprint has run</Typography>
       ) : (
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={summary} style={{ display: 'block' }}>
           <line x1={LEFT} x2={W - 8} y1={y(0)} y2={y(0)} stroke={tokens.color.border} />

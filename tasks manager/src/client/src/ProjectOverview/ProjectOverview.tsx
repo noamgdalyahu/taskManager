@@ -1,4 +1,4 @@
-import { useProject, useTeam } from '@/api/projects'
+import { useProject } from '@/api/projects'
 import { useSprints } from '@/api/sprints'
 import { useProjectTasks } from '@/api/tasks'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
@@ -14,9 +14,8 @@ export function ProjectOverview() {
   const project = useProject(projectId)
   const sprints = useSprints(projectId)
   const tasks = useProjectTasks(projectId)
-  const team = useTeam(projectId)
 
-  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading />
+  if (project.isLoading || sprints.isLoading || tasks.isLoading) return <PageLoading shape="cards" />
   const error = project.error ?? sprints.error ?? tasks.error
   if (error) return <ErrorState error={error} onRetry={() => { void project.refetch(); void sprints.refetch(); void tasks.refetch() }} />
 
@@ -24,7 +23,7 @@ export function ProjectOverview() {
     <>
       <PageHeader eyebrow="Project" title={project.data?.name ?? ''} subtitle={project.data?.description || undefined} />
       <SprintList projectId={projectId} sprints={sprints.data ?? []} />
-      <Backlog projectId={projectId} tasks={tasks.data ?? []} sprints={sprints.data ?? []} members={team.data ?? []} />
+      <Backlog projectId={projectId} tasks={tasks.data ?? []} sprints={sprints.data ?? []} />
     </>
   )
 }

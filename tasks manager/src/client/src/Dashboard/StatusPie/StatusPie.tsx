@@ -7,10 +7,10 @@ import { tokens } from '@/theme/tokens'
 
 /** One colour per status, the same everywhere it appears. "To do" is the neutral gray: not started has no hue. */
 const STATUS_COLOR: Record<TaskStatus, string> = {
-  ToDo: tokens.color.idealLine,
-  InProgress: tokens.color.primary,
-  InQA: tokens.color.forecast,
-  Done: '#12968A',
+  ToDo: tokens.color.stTodo,
+  InProgress: tokens.color.stProgress,
+  InQA: tokens.color.stQa,
+  Done: tokens.color.stDone,
 }
 
 const SIZE = 168
@@ -62,7 +62,7 @@ export function StatusPie({ counts }: StatusPieProps) {
         Tasks by status
       </Typography>
       {total === 0 ? (
-        <Typography color="text.secondary">There are no tasks in this sprint yet.</Typography>
+        <Typography color="text.secondary">There are no tasks in this sprint yet</Typography>
       ) : (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
           <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE} role="img" aria-label={summary} style={{ flex: '0 0 auto' }}>

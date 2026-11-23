@@ -301,7 +301,26 @@ export interface paths {
             };
         };
         post?: never;
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1570,6 +1589,7 @@ export interface components {
             dependsOn: string[] | null;
             /** Format: uuid */
             sprintId: string | null;
+            type?: components["schemas"]["NullableOfTaskType2"];
         };
         DashboardDto: {
             /** Format: uuid */
@@ -1677,6 +1697,13 @@ export interface components {
             /** Format: double */
             blockingShare: number;
         };
+        /** @enum {unknown|null} */
+        NullableOfTaskType: "Bug" | "UserStory" | "Task" | "Epic" | "Feature" | "Issue" | "TestCase" | "Ticket" | null;
+        /**
+         * @default null
+         * @enum {unknown|null}
+         */
+        NullableOfTaskType2: "Bug" | "UserStory" | "Task" | "Epic" | "Feature" | "Issue" | "TestCase" | "Ticket" | null;
         PlanComparisonDto: {
             isComparable: boolean;
             message: string | null;
@@ -1892,6 +1919,7 @@ export interface components {
             updatedAt: string;
             /** Format: date-time */
             completedAt: string | null;
+            type: components["schemas"]["NullableOfTaskType"];
         };
         TeamMemberDto: {
             /** Format: uuid */
@@ -1944,6 +1972,7 @@ export interface components {
             sprintId: string | null;
             /** Format: uuid */
             assigneeId: string | null;
+            type?: components["schemas"]["NullableOfTaskType2"];
         };
         UserDto: {
             /** Format: uuid */

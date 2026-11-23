@@ -18,7 +18,7 @@ export function SprintHistory({ sprints }: { sprints: SprintReportDto[] }) {
         Accuracy is estimated hours divided by logged hours: 100% is a perfect estimate, below 100% means the work took longer than planned.
       </Typography>
       {sprints.length === 0 ? (
-        <Typography color="text.secondary">No sprint has started yet.</Typography>
+        <Typography color="text.secondary">No sprint has started yet</Typography>
       ) : (
         <Box sx={{ overflowX: 'auto' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: COLUMNS, columnGap: 1.5, minWidth: 640 }}>

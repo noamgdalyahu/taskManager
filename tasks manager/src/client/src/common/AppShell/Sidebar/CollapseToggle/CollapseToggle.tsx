@@ -20,13 +20,12 @@ export function CollapseToggle({ collapsed, onToggle }: CollapseToggleProps) {
         aria-expanded={!collapsed}
         sx={{
           flex: '0 0 auto',
-          width: 36,
-          height: 36,
+          width: 28,
+          height: 28,
           borderRadius: `${tokens.radius.control}px`,
-          color: 'text.secondary',
-          '&:hover': { bgcolor: tokens.color.track, color: 'text.primary' },
+          color: tokens.color.faint,
+          '&:hover': { bgcolor: tokens.color.wash, color: tokens.color.text },
           '&:active': { transform: 'scale(0.92)' },
-          '&:focus-visible': { outline: `2px solid ${tokens.color.primary}`, outlineOffset: -2 },
         }}
       >
         {collapsed ? <KeyboardDoubleArrowRightRounded fontSize="small" /> : <KeyboardDoubleArrowLeftRounded fontSize="small" />}

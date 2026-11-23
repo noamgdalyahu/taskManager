@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, matchPath, useLocation } from 'react-router-dom'
 import { NavItem, type NavLinkEntry } from '@/common/AppShell/Sidebar/NavItem/NavItem'
 import { tokens } from '@/theme/tokens'
@@ -20,18 +20,26 @@ interface NavGroupProps {
   items: NavLinkEntry[]
   expanded: boolean
   onToggle: () => void
+  /** Opens the group without toggling it. */
+  onOpen: () => void
   collapsed: boolean
   onNavigate?: () => void
 }
 
 /**
- * An expandable section like "Boards" in Azure DevOps. Wide: a header with a chevron that folds its pages in and out.
+ * An expandable section such as "Boards". Wide: a header with a chevron, and its pages indented under a 1px left rule.
  * Icon rail: the header is an icon, and pressing it opens the pages as a flyout beside the rail.
  */
-export function NavGroup({ id, label, icon, items, expanded, onToggle, collapsed, onNavigate }: NavGroupProps) {
+export function NavGroup({ id, label, icon, items, expanded, onToggle, onOpen, collapsed, onNavigate }: NavGroupProps) {
   const { pathname } = useLocation()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const active = items.some((item) => matchPath({ path: item.to, end: item.end ?? false }, pathname))
+
+  // Arriving on a page inside a collapsed group opens the group, so the current page is never hidden.
+  useEffect(() => {
+    if (active && !expanded && !collapsed) onOpen()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   if (collapsed) {
     return (
@@ -43,24 +51,21 @@ export function NavGroup({ id, label, icon, items, expanded, onToggle, collapsed
             aria-haspopup="menu"
             aria-expanded={!!anchor}
             sx={{
-              position: 'relative',
-              minHeight: 44,
+              minHeight: 34,
               justifyContent: 'center',
               borderRadius: `${tokens.radius.control}px`,
-              color: active ? 'primary.dark' : 'text.primary',
-              bgcolor: active ? 'primary.light' : 'transparent',
-              '& svg': { fontSize: 20 },
-              '&:hover': { bgcolor: active ? 'primary.light' : tokens.color.track },
-              '&:focus-visible': { outline: `2px solid ${tokens.color.primary}`, outlineOffset: -2 },
-              '&::before': active ? { content: '""', position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2, bgcolor: 'primary.main' } : undefined,
+              border: `1px solid ${active ? tokens.color.borderStrong : 'transparent'}`,
+              color: tokens.color.text,
+              bgcolor: active ? tokens.color.wash : 'transparent',
+              '& svg': { fontSize: 16 },
+              '&:hover': { bgcolor: tokens.color.wash },
             }}
           >
             {icon}
           </ButtonBase>
         </Tooltip>
-        {/* The flyout opens from the icon that was pressed, to its right (apple-design: anchor to the source). */}
         <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }} slotProps={{ paper: { sx: { ml: 1, minWidth: 190 } } }}>
-          <Box sx={{ px: 2, py: 0.75, color: 'text.secondary', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</Box>
+          <Box sx={{ px: 2, py: 0.75, color: tokens.color.faint, fontSize: '0.75rem', fontWeight: 500 }}>{label}</Box>
           {items.map((item) => (
             <MenuItem
               key={item.to}
@@ -72,7 +77,7 @@ export function NavGroup({ id, label, icon, items, expanded, onToggle, collapsed
                 onNavigate?.()
               }}
             >
-              <ListItemIcon sx={{ minWidth: 34, '& svg': { fontSize: 20 } }}>{item.icon}</ListItemIcon>
+              <ListItemIcon sx={{ minWidth: 28, '& svg': { fontSize: 16 } }}>{item.icon}</ListItemIcon>
               <ListItemText>{item.label}</ListItemText>
             </MenuItem>
           ))}
@@ -92,27 +97,27 @@ export function NavGroup({ id, label, icon, items, expanded, onToggle, collapsed
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 1.5,
-          minHeight: 44,
-          px: 1.5,
+          gap: 1.25,
+          minHeight: 34,
+          px: 1.25,
           borderRadius: `${tokens.radius.control}px`,
-          color: 'text.primary',
+          border: '1px solid transparent',
+          color: tokens.color.text,
           fontSize: '0.875rem',
-          fontWeight: active ? 700 : 600,
+          fontWeight: 600,
           textAlign: 'left',
-          '& > svg:first-of-type': { fontSize: 20 },
-          '&:hover': { bgcolor: tokens.color.track },
-          '&:focus-visible': { outline: `2px solid ${tokens.color.primary}`, outlineOffset: -2 },
+          '& svg': { fontSize: 16 },
+          '&:hover': { bgcolor: tokens.color.wash },
         }}
       >
         {icon}
         <Box component="span" sx={{ flex: 1 }}>
           {label}
         </Box>
-        <ExpandMoreRounded sx={{ fontSize: 20, color: 'text.secondary', transform: expanded ? 'none' : 'rotate(-90deg)', transition: 'transform 180ms ease-out' }} />
+        <ExpandMoreRounded aria-hidden sx={{ fontSize: 16, color: tokens.color.faint, transform: expanded ? 'none' : 'rotate(-90deg)', transition: 'transform 150ms ease-out' }} />
       </ButtonBase>
       <Collapse in={expanded} id={`nav-group-${id}`} unmountOnExit={false}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, pt: 0.25 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', pt: '2px', ml: '17px', pl: 1, borderLeft: `1px solid ${tokens.color.border}` }}>
           {items.map((item) => (
             <NavItem key={item.to} {...item} nested onNavigate={onNavigate} />
           ))}

@@ -3,22 +3,20 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import { useMemo, useState } from 'react'
-import type { SprintDto, TaskDto, TeamMemberDto } from '@/api/types'
+import type { SprintDto, TaskDto } from '@/api/types'
+import { NewTaskDialog } from '@/common/NewTaskDialog/NewTaskDialog'
 import { Surface } from '@/common/Surface/Surface'
 import { BacklogRow } from '@/ProjectOverview/Backlog/BacklogRow/BacklogRow'
-import { NewTaskDialog } from '@/ProjectOverview/Backlog/NewTaskDialog/NewTaskDialog'
 
 interface BacklogProps {
   projectId: string
   tasks: TaskDto[]
   sprints: SprintDto[]
-  members: TeamMemberDto[]
 }
 
-export function Backlog({ projectId, tasks, sprints, members }: BacklogProps) {
+export function Backlog({ projectId, tasks, sprints }: BacklogProps) {
   const [creating, setCreating] = useState(false)
   const sprintName = useMemo(() => new Map(sprints.map((sprint) => [sprint.id, sprint.name])), [sprints])
-  const skillOptions = useMemo(() => [...new Set(members.flatMap((member) => Object.keys(member.skills)))].sort(), [members])
 
   // Free tasks first (they still need planning), then planned work, finished work last.
   const rank = (task: TaskDto) => (task.status === 'Done' ? 2 : task.sprintId === null ? 0 : 1)
@@ -48,7 +46,7 @@ export function Backlog({ projectId, tasks, sprints, members }: BacklogProps) {
       {ordered.map((task) => (
         <BacklogRow key={task.id} task={task} place={task.sprintId ? (sprintName.get(task.sprintId) ?? 'A sprint') : 'Backlog'} to={`/p/${projectId}/tasks/${task.id}`} />
       ))}
-      {creating && <NewTaskDialog projectId={projectId} sprints={sprints} tasks={tasks} skillOptions={skillOptions} onClose={() => setCreating(false)} />}
+      {creating && <NewTaskDialog projectId={projectId} sprints={sprints} tasks={tasks} onClose={() => setCreating(false)} />}
     </Surface>
   )
 }

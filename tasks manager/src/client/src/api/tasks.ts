@@ -49,6 +49,15 @@ export function useUpdateTask() {
   })
 }
 
+/** Deletes a task with its comments, time logs and history (managers). The deleted task's own detail query is left alone, so a page showing it does not refetch a 404. */
+export function useDeleteTask() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (taskId: string) => http<void>(`/tasks/${taskId}`, { method: 'DELETE' }),
+    onSuccess: (_result, taskId) => qc.invalidateQueries({ predicate: (query) => !(query.queryKey[0] === 'tasks' && query.queryKey[1] === taskId) }),
+  })
+}
+
 export function useAssignTask() {
   const refresh = useRefreshEverything()
   return useMutation({

@@ -87,6 +87,8 @@ public sealed class TaskDocument
     public string Status { get; set; } = "";
     /// <summary>Assignee user id (indexed).</summary>
     public Guid? AssigneeId { get; set; }
+    /// <summary>Task type name, null for tasks created before types existed.</summary>
+    public string? Type { get; set; }
     /// <summary>Required skills.</summary>
     public List<string> RequiredSkills { get; set; } = new();
     /// <summary>Prerequisite task ids.</summary>

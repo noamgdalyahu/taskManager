@@ -46,3 +46,12 @@ export function useSprintTransition(projectId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.sprints(projectId) }),
   })
 }
+
+/** Rename a sprint or move its dates (managers). */
+export function useUpdateSprint(projectId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { sprintId: string; body: SprintRequest }) => http<SprintDto>(`/sprints/${input.sprintId}`, { method: 'PUT', body: input.body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.sprints(projectId) }),
+  })
+}

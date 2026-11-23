@@ -1,10 +1,10 @@
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { useAssignTask } from '@/api/tasks'
 import type { PlanJobDto, TeamMemberDto } from '@/api/types'
+import { SkeletonBlock } from '@/common/PageLoading/SkeletonBlock/SkeletonBlock'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
 import { Surface } from '@/common/Surface/Surface'
 import { PLAN_GRID, PlanRow } from '@/SprintPlanning/SuggestedPlan/PlanRow/PlanRow'
@@ -43,21 +43,25 @@ export function SuggestedPlan({ job, starting, members, accepting, planning, onA
       {!job && !starting && (
         <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
           {planning === 'open' && <>Choose the tasks for this sprint, then press <strong>Suggest plan</strong>. The calculation runs in the background and takes a moment.</>}
-          {planning === 'started' && 'This sprint has already started, so it can no longer be planned.'}
+          {planning === 'started' && 'This sprint has already started, so it can no longer be planned'}
           {planning === 'managers' && 'Managers plan the sprint. You can see the tasks that are in it on the left.'}
         </Typography>
       )}
 
       {running && (
-        <Box role="status" sx={{ py: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
-          <CircularProgress size={20} />
-          {job?.status === 'Running' ? 'Calculating the best assignment…' : 'Waiting for a free worker…'}
+        <Box role="status" aria-busy="true" sx={{ py: 2, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+          <Typography color="text.secondary" sx={{ pb: 0.5 }}>
+            {job?.status === 'Running' ? 'Calculating the best assignment…' : 'Waiting for a free worker…'}
+          </Typography>
+          {[0, 1, 2, 3, 4].map((row) => (
+            <SkeletonBlock key={row} height={36} radius={4} />
+          ))}
         </Box>
       )}
 
-      {job?.status === 'Failed' && <ErrorState error={new Error(job.error ?? 'The plan could not be calculated.')} />}
+      {job?.status === 'Failed' && <ErrorState error={new Error(job.error ?? 'The plan could not be calculated')} />}
 
-      {plan && plan.tasks.length === 0 && <Typography sx={{ py: 3 }} color="text.secondary">There are no open tasks in this sprint to plan.</Typography>}
+      {plan && plan.tasks.length === 0 && <Typography sx={{ py: 3 }} color="text.secondary">There are no open tasks in this sprint to plan</Typography>}
 
       {plan && plan.tasks.length > 0 && (
         <>

@@ -15,8 +15,8 @@ public sealed class JwtOptions
     /// <summary>HMAC signing key; at least 32 bytes. Comes from user-secrets or environment, never from source.</summary>
     public required string SigningKey { get; init; }
 
-    /// <summary>Access token lifetime.</summary>
-    public int AccessTokenMinutes { get; init; } = 60;
+    /// <summary>Access token lifetime. The client renews it while the app is open, so this is how long a signed-in but idle session lasts.</summary>
+    public int AccessTokenMinutes { get; init; } = 120;
 }
 
 /// <summary>Background planning settings, bound from the "Planning" section.</summary>

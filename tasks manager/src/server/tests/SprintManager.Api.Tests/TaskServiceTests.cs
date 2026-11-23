@@ -92,6 +92,61 @@ public class TaskServiceTests
         Assert.Equal(ErrorKind.Validation, result.Error!.Value.Kind);
     }
 
+    // ---- delete ---------------------------------------------------------------------
+
+    [Fact]
+    public async Task Manager_DeletesTask_WithItsCommentsTimeLogsAndHistory()
+    {
+        var task = w.AddTask("Doomed");
+        var keep = w.AddTask("Keep");
+        w.Comments.Items.Add(new Comment(Guid.NewGuid(), task.Id, w.Mia.Id, "note", w.Clock.UtcNow));
+        w.TimeLogs.Items.Add(new TimeLog(Guid.NewGuid(), task.Id, w.Dan.Id, new Hours(2), new DateOnly(2026, 1, 1), null));
+        w.History.Items.Add(new HistoryEntry(Guid.NewGuid(), task.Id, w.Mia.Id, "created", null, "Doomed", w.Clock.UtcNow));
+        w.History.Items.Add(new HistoryEntry(Guid.NewGuid(), keep.Id, w.Mia.Id, "created", null, "Keep", w.Clock.UtcNow));
+
+        var result = await w.TaskService.DeleteAsync(task.Id, w.AsMia, Ct);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(w.Tasks.Items.ContainsKey(task.Id));
+        Assert.True(w.Tasks.Items.ContainsKey(keep.Id));
+        Assert.Empty(w.Comments.Items);
+        Assert.Empty(w.TimeLogs.Items);
+        Assert.Equal(keep.Id, Assert.Single(w.History.Items).TaskId);
+    }
+
+    [Fact]
+    public async Task Delete_RemovesTheTaskFromWhatDependedOnIt()
+    {
+        var schema = w.AddTask("Schema");
+        var api = w.AddTask("API", dependsOn: [schema.Id]);
+
+        await w.TaskService.DeleteAsync(schema.Id, w.AsMia, Ct);
+
+        Assert.Empty(w.Tasks.Items[api.Id].DependsOn);
+    }
+
+    [Fact]
+    public async Task Member_CannotDeleteTask()
+    {
+        var task = w.AddTask("Mine", assignee: w.Dan.Id);
+
+        var result = await w.TaskService.DeleteAsync(task.Id, w.AsDan, Ct);
+
+        Assert.Equal(ErrorKind.Forbidden, result.Error!.Value.Kind);
+        Assert.True(w.Tasks.Items.ContainsKey(task.Id));
+    }
+
+    [Fact]
+    public async Task Outsider_CannotDeleteTask_SeesItAsNotFound()
+    {
+        var task = w.AddTask("Secret");
+
+        var result = await w.TaskService.DeleteAsync(task.Id, w.AsOzManager, Ct);
+
+        Assert.Equal(ErrorKind.NotFound, result.Error!.Value.Kind);
+        Assert.True(w.Tasks.Items.ContainsKey(task.Id));
+    }
+
     // ---- status rules -----------------------------------------------------------
 
     [Fact]

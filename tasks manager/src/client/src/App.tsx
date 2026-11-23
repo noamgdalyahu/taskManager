@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MotionConfig } from 'motion/react'
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { ApiError } from '@/api/http'
 import { AuthProvider } from '@/auth/AuthProvider/AuthProvider'
 import { RequireAuth } from '@/auth/RequireAuth/RequireAuth'
@@ -25,6 +25,9 @@ const TaskDetail = lazy(() => import('@/TaskDetail/TaskDetail').then((m) => ({ d
 const Team = lazy(() => import('@/Team/Team').then((m) => ({ default: m.Team })))
 const Reports = lazy(() => import('@/Reports/Reports').then((m) => ({ default: m.Reports })))
 const Profile = lazy(() => import('@/Profile/Profile').then((m) => ({ default: m.Profile })))
+const WorkItems = lazy(() => import('@/WorkItems/WorkItems').then((m) => ({ default: m.WorkItems })))
+const SprintBacklog = lazy(() => import('@/SprintBacklog/SprintBacklog').then((m) => ({ default: m.SprintBacklog })))
+const ProjectSettings = lazy(() => import('@/ProjectSettings/ProjectSettings').then((m) => ({ default: m.ProjectSettings })))
 const SprintPlanning = lazy(() => import('@/SprintPlanning/SprintPlanning').then((m) => ({ default: m.SprintPlanning })))
 
 const queryClient = new QueryClient({
@@ -36,6 +39,12 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+/** "/p/:id/overview" is the Overview page's second address; the project's own address stays the canonical one. */
+function OverviewAlias() {
+  const { projectId } = useParams()
+  return <Navigate to={`/p/${projectId}`} replace />
+}
 
 export function App() {
   const appearance = useAppearance()
@@ -61,6 +70,10 @@ export function App() {
                     <Route path="projects" element={<Projects />} />
                     {/* Every member of a project sees every screen; only the editing controls on them are for managers. */}
                     <Route path="p/:projectId" element={<ProjectOverview />} />
+                    <Route path="p/:projectId/overview" element={<OverviewAlias />} />
+                    <Route path="p/:projectId/work-items" element={<WorkItems />} />
+                    <Route path="p/:projectId/backlog" element={<SprintBacklog />} />
+                    <Route path="p/:projectId/settings" element={<ProjectSettings />} />
                     <Route path="p/:projectId/planning/:sprintId?" element={<SprintPlanning />} />
                     <Route path="p/:projectId/dashboard/:sprintId?" element={<Dashboard />} />
                     <Route path="p/:projectId/team" element={<Team />} />

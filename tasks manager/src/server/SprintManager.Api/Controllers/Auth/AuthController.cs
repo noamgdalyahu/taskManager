@@ -34,6 +34,17 @@ public sealed class AuthController(AuthService auth) : ControllerBase
         return result.IsSuccess ? Ok(result.Response) : ToProblem(result);
     }
 
+    /// <summary>Returns a new access token for a signed-in user whose current token is still valid (a sliding session).</summary>
+    [HttpPost("refresh")]
+    [Authorize]
+    [ProducesResponseType<AuthResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    {
+        var result = await auth.RefreshAsync(CurrentUser.From(User), cancellationToken);
+        return result.IsSuccess ? Ok(result.Response) : ToProblem(result);
+    }
+
     /// <summary>Returns the caller's profile.</summary>
     [HttpGet("me")]
     [Authorize]

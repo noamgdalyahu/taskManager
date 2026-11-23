@@ -126,6 +126,10 @@ public sealed class MongoTaskRepository(MongoContext db) : ITaskRepository
         db.Tasks.ReplaceOneAsync(t => t.Id == task.Id.Value, task.ToDocument(), cancellationToken: ct);
 
     /// <inheritdoc />
+    public Task DeleteAsync(TaskId id, CancellationToken ct = default) =>
+        db.Tasks.DeleteOneAsync(t => t.Id == id.Value, ct);
+
+    /// <inheritdoc />
     public Task UpdateManyAsync(IReadOnlyCollection<TaskItem> tasks, CancellationToken ct = default)
     {
         if (tasks.Count == 0)

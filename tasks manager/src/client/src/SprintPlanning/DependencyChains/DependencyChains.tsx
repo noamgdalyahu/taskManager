@@ -76,10 +76,10 @@ export function DependencyChains({ tasks, plan }: DependencyChainsProps) {
             and {otherLinks.length - shown.length} more links
           </Typography>
         )}
-        {!plan && otherLinks.length === 0 && <Typography color="text.secondary">No dependencies between the selected tasks.</Typography>}
+        {!plan && otherLinks.length === 0 && <Typography color="text.secondary">No dependencies between the selected tasks</Typography>}
         {plan && (
           <Typography variant="body2" color="text.secondary">
-            The dark pill is the critical path: {formatHours(plan.criticalPathHours)}. {blocking ? 'A dependency cycle was found. Break it before planning.' : 'No dependency cycles found.'}
+            The dark pill is the critical path: {formatHours(plan.criticalPathHours)}. {blocking ? 'A dependency cycle was found. Break it before planning.' : 'No dependency cycles found'}
           </Typography>
         )}
       </Box>

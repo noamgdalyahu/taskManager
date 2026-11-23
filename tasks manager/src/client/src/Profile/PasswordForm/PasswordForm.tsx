@@ -36,7 +36,7 @@ export function PasswordForm() {
       </Typography>
       <Stack component="form" onSubmit={submit} spacing={2} noValidate>
         {change.error && <Alert severity="error">{messageOf(change.error)}</Alert>}
-        {done && <Alert severity="success">Password changed.</Alert>}
+        {done && <Alert severity="success">Password changed</Alert>}
         <TextField label="Current password" type="password" autoComplete="current-password" value={current} onChange={(event) => setCurrent(event.target.value)} />
         <TextField
           label="New password"

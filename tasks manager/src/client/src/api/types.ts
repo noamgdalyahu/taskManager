@@ -7,6 +7,7 @@ type S = components['schemas']
 export type Role = S['UserRole']
 export type TaskStatus = S['WorkItemStatus']
 export type SprintStatus = S['SprintStatus']
+export type TaskType = NonNullable<S['NullableOfTaskType']>
 
 export type UserDto = S['UserDto']
 export type AuthResponse = S['AuthResponse']
@@ -58,4 +59,30 @@ export const STATUS_LABEL: Record<TaskStatus, string> = {
   InProgress: 'In progress',
   InQA: 'In QA',
   Done: 'Done',
+}
+
+/** The kinds of work, in the order they are offered. */
+export const TASK_TYPES = ['Bug', 'UserStory', 'Task', 'Epic', 'Feature', 'Issue', 'TestCase', 'Ticket'] as const satisfies readonly TaskType[]
+
+export const TASK_TYPE_LABEL: Record<TaskType, string> = {
+  Bug: 'Bug',
+  UserStory: 'User Story',
+  Task: 'Task',
+  Epic: 'Epic',
+  Feature: 'Feature',
+  Issue: 'Issue',
+  TestCase: 'Test Case',
+  Ticket: 'Ticket',
+}
+
+/** What each type is for, shown as help text where a type is chosen. */
+export const TASK_TYPE_PURPOSE: Record<TaskType, string> = {
+  Bug: 'Something is broken and needs fixing',
+  UserStory: 'A requirement describing something a user wants',
+  Task: 'A specific piece of work to complete',
+  Epic: 'A large initiative containing multiple work items',
+  Feature: 'A new capability or functionality',
+  Issue: 'A problem, concern, or item requiring investigation',
+  TestCase: 'A defined scenario to verify functionality',
+  Ticket: 'A general work request or support item',
 }

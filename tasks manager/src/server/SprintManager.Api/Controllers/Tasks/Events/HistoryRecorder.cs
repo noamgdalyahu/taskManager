@@ -32,6 +32,7 @@ public sealed class HistoryRecorder(IHistoryRepository history) : ITaskChangeObs
         if (b.Deadline != a.Deadline) yield return Entry("deadline", b.Deadline?.ToString("yyyy-MM-dd"), a.Deadline?.ToString("yyyy-MM-dd"));
         if (b.SprintId != a.SprintId) yield return Entry("sprint", b.SprintId?.ToString(), a.SprintId?.ToString());
         if (!b.DependsOn.SequenceEqual(a.DependsOn)) yield return Entry("dependencies", Join(b.DependsOn), Join(a.DependsOn));
+        if (b.Type != a.Type) yield return Entry("type", b.Type?.ToString(), a.Type?.ToString());
         if (!b.RequiredSkills.SequenceEqual(a.RequiredSkills)) yield return Entry("skills", string.Join(",", b.RequiredSkills), string.Join(",", a.RequiredSkills));
     }
 

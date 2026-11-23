@@ -6,7 +6,7 @@ import type { UserDto } from '@/api/types'
  * "configures http in an effect" would let the first requests go out without it.
  *
  * Storage note: the JWT lives in localStorage so a refresh keeps you signed in. That is readable by any script on this
- * origin (XSS), which is why the app renders no raw HTML and the token is short lived (60 minutes).
+ * origin (XSS), which is why the app renders no raw HTML and the token is short lived (two hours, renewed while the app is open).
  */
 export interface Session {
   token: string

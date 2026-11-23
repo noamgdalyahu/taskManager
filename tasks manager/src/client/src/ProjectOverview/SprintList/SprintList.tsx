@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import type { SprintDto } from '@/api/types'
 import { useAuth } from '@/auth/useAuth'
 import { EmptyState } from '@/common/EmptyState/EmptyState'
-import { NewSprintDialog } from '@/ProjectOverview/SprintList/NewSprintDialog/NewSprintDialog'
+import { NewSprintDialog } from '@/common/NewSprintDialog/NewSprintDialog'
 import { SprintCard } from '@/ProjectOverview/SprintList/SprintCard/SprintCard'
 
 export function SprintList({ projectId, sprints }: { projectId: string; sprints: SprintDto[] }) {

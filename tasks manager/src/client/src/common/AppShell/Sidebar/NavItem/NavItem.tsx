@@ -16,10 +16,11 @@ interface NavItemProps extends NavLinkEntry {
   onNavigate?: () => void
   /** Icon-only rail: the label moves into a tooltip. */
   collapsed?: boolean
-  /** A child of a group: indented under its header. */
+  /** A child of a group: it sits under the group's 1px rule, so it needs no extra indent of its own. */
   nested?: boolean
 }
 
+/** A navigation link. The current page has a stronger 1px border and the selected wash, never a coloured fill. */
 export function NavItem({ to, label, icon, end, onNavigate, collapsed = false, nested = false }: NavItemProps) {
   const link = (
     <ButtonBase
@@ -29,29 +30,24 @@ export function NavItem({ to, label, icon, end, onNavigate, collapsed = false, n
       onClick={onNavigate}
       aria-label={collapsed ? label : undefined}
       sx={{
-        position: 'relative',
         display: 'flex',
         justifyContent: collapsed ? 'center' : 'flex-start',
         alignItems: 'center',
-        gap: 1.5,
-        minHeight: nested ? 40 : 44,
-        px: collapsed ? 0 : 1.5,
-        pl: !collapsed && nested ? 5 : undefined,
+        gap: 1.25,
+        minHeight: 34,
+        px: collapsed ? 0 : 1.25,
         borderRadius: `${tokens.radius.control}px`,
-        color: 'text.primary',
-        fontSize: '0.875rem',
-        fontWeight: 500,
+        border: '1px solid transparent',
+        color: nested ? tokens.color.muted : tokens.color.text,
+        // Top-level items are bold in the primary text colour; children are 13.5px and lighter.
+        fontSize: nested ? '0.84375rem' : '0.875rem',
+        fontWeight: nested ? 400 : 600,
         textAlign: 'left',
         whiteSpace: 'nowrap',
-        transition: 'transform 100ms ease-out, background-color 120ms ease-out',
-        '& svg': { fontSize: 20, flex: '0 0 auto' },
-        '&:hover': { bgcolor: tokens.color.track },
-        '&:active': { transform: 'scale(0.98)' },
-        '&:focus-visible': { outline: `2px solid ${tokens.color.primary}`, outlineOffset: -2 },
-        // NavLink adds the `active` class (and aria-current) to the link that matches the URL. As in Azure DevOps the
-        // current page also gets an accent bar on its left edge, so it stays findable without relying on colour alone.
-        '&.active': { bgcolor: 'primary.light', color: 'primary.dark', fontWeight: 600 },
-        '&.active::before': { content: '""', position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 2, bgcolor: 'primary.main' },
+        '& svg': { fontSize: 16, flex: '0 0 auto', color: nested ? tokens.color.faint : 'inherit' },
+        '&:hover': { bgcolor: tokens.color.wash },
+        // NavLink adds the `active` class and aria-current="page" to the link that matches the URL.
+        '&.active': { bgcolor: tokens.color.wash, borderColor: tokens.color.borderStrong, color: tokens.color.text, fontWeight: nested ? 500 : 600 },
       }}
     >
       {icon}

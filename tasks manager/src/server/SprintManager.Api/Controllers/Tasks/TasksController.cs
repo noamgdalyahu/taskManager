@@ -46,6 +46,12 @@ public sealed class TasksController(TaskService service) : ApiControllerBase
     public async Task<IActionResult> Update(Guid id, UpdateTaskRequest request, CancellationToken ct) =>
         From(await service.UpdateAsync(new TaskId(id), request, Caller, ct), Map);
 
+    /// <summary>Deletes a task with its comments, time logs and history (managers). Tasks that depended on it no longer wait for it.</summary>
+    [HttpDelete("tasks/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
+        NoContentFrom(await service.DeleteAsync(new TaskId(id), Caller, ct));
+
     /// <summary>Changes status (any project member).</summary>
     [HttpPatch("tasks/{id:guid}/status")]
     [ProducesResponseType<TaskDto>(StatusCodes.Status200OK)]

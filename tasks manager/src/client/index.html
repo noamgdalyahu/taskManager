@@ -1,11 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)" />
     <title>Team Sprint Manager</title>
+    <!-- Sets the theme before the first paint, with the same rule as src/theme/appearance.ts: saved choice, then the OS. -->
+    <script>
+      ;(function () {
+        var theme = 'dark'
+        try {
+          var saved = localStorage.getItem('sm.appearance')
+          if (saved === 'dark' || saved === 'light') theme = saved
+          else if (window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light'
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme
+        document.documentElement.style.colorScheme = theme
+        document.documentElement.style.background = theme === 'dark' ? '#000000' : '#ffffff'
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

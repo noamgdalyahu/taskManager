@@ -21,7 +21,7 @@ export function WorkloadAfterAssignment({ plan, members, sprint }: WorkloadAfter
         Workload after assignment
       </Typography>
       {!plan ? (
-        <Typography color="text.secondary">Shown once a plan has been suggested.</Typography>
+        <Typography color="text.secondary">Shown once a plan has been suggested</Typography>
       ) : (
         <Stack spacing={1.75}>
           {members.map((member) => (
