@@ -8,6 +8,7 @@ import { usePlanComparison } from '@/api/planning'
 import type { StrategyScoreDto } from '@/api/types'
 import { ErrorState } from '@/common/ErrorState/ErrorState'
 import { Surface } from '@/common/Surface/Surface'
+import { comparisonSummary } from '@/lib/compare'
 import { tokens } from '@/theme/tokens'
 
 // The first column gets the room: its label plus the "Best" chip must stay on one line.
@@ -83,7 +84,7 @@ export function PlanComparison({ sprintId }: { sprintId: string }) {
             {data.winners.length > 1
               ? `Tie: ${data.winners.map((w) => LABEL[w] ?? w).join(' and ')} reach the same score.`
               : `${LABEL[data.winner ?? ''] ?? data.winner} gives the best result.`}{' '}
-            Lower score is better. Load imbalance is how unevenly people are loaded relative to their capacity.
+            {comparisonSummary(data.scores) ?? ''} Lower score is better. Load imbalance is how unevenly people are loaded relative to their capacity.
           </Typography>
         </Box>
       )}
