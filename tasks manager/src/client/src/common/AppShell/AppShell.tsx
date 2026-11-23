@@ -8,6 +8,7 @@ import { Outlet } from 'react-router-dom'
 import { MobileTopBar } from '@/common/AppShell/MobileTopBar/MobileTopBar'
 import { Sidebar } from '@/common/AppShell/Sidebar/Sidebar'
 import { useNavState } from '@/common/AppShell/Sidebar/navStore'
+import { useLiveUpdates } from '@/hooks/useLiveUpdates'
 import { PageLoading } from '@/common/PageLoading/PageLoading'
 import { springs } from '@/theme/motion'
 import { tokens } from '@/theme/tokens'
@@ -18,6 +19,7 @@ export function AppShell() {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'))
   const { collapsed } = useNavState()
   const [menuOpen, setMenuOpen] = useState(false)
+  useLiveUpdates()
 
   return (
     <Box sx={{ minHeight: '100dvh', display: { md: 'flex' }, bgcolor: tokens.color.canvas }}>

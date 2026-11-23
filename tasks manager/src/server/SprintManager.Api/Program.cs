@@ -21,6 +21,7 @@ using SprintManager.Api.Controllers.Team;
 using SprintManager.Api.Infrastructure;
 using SprintManager.Api.Jobs;
 using SprintManager.Api.Options;
+using SprintManager.Api.Realtime;
 using SprintManager.Api.Security;
 using SprintManager.Core.Abstractions;
 using SprintManager.Core.Domain;
@@ -90,6 +91,17 @@ builder.Services
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
         };
+        // Browsers cannot set headers on a WebSocket, so the hub takes the token from the query string.
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var token = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments(ChangesHub.Path))
+                    context.Token = token;
+                return Task.CompletedTask;
+            },
+        };
     });
 
 builder.Services.AddAuthorizationBuilder()
@@ -113,7 +125,8 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
 // Enums travel as strings ("InProgress"). MVC and the OpenAPI generator read different JSON options, so both are set:
 // the first is what controllers actually send, the second is what the OpenAPI document (and the client's generated
 // TypeScript types) describes. Setting only one makes the contract lie about the wire format.
-builder.Services.AddControllers()
+builder.Services.AddSignalR();
+builder.Services.AddControllers(o => o.Filters.Add<BroadcastChangesFilter>())
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
@@ -138,6 +151,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChangesHub>(ChangesHub.Path);
 app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
